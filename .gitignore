@@ -17,6 +17,7 @@ build/
 *.swp
 *.swo
 .DS_Store
+.jfrog/
 
 # Environment variables
 .env
