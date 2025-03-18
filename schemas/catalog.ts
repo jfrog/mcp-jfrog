@@ -11,12 +11,12 @@ const JFrogCatalogSupportedPackageTypes = [
 ] as const;
 
 // Request Schemas
-export const JFrogPackageSchema = z.object({
+export const JFrogCatalogPackageSchema = z.object({
     type: z.enum(JFrogCatalogSupportedPackageTypes).describe("The type of package."),
     name: z.string().describe("The name of the package, as it appears in the package repository.")
 });
 
-export const JFrogPackageVersionSchema = JFrogPackageSchema.extend({
+export const JFrogCatalogPackageVersionSchema = JFrogCatalogPackageSchema.extend({
     version: z.string().default("latest").describe("The version of the package, as it appears in the package repository. Default value is 'latest'.")
 });
 
@@ -75,7 +75,7 @@ export const JFrogCatalogVulnerabilityResponseSchema = z.object({
     severity: z.enum(["Critical", "High", "Medium", "Low", "Unknown"]).describe("The severity level of the vulnerability.")
 });
 
-export const JFrogCatalogPackageVersionVulnerabilitiesSchema = JFrogPackageVersionSchema.extend({
+export const JFrogCatalogPackageVersionVulnerabilitiesSchema = JFrogCatalogPackageVersionSchema.extend({
     pageSize: z.number().default(10).describe("Number of vulnerabilities to return per page."),
     pageCount: z.number().default(1).describe("Number of pages to return.")
 });
@@ -84,7 +84,7 @@ export const JFrogCatalogVulnerabilityInfoSchema = z.object({
     name: z.string().describe("The identifier of the vulnerability (e.g. CVE ID)."),
     description: z.string().describe("A description of the vulnerability."),
     severity: JFrogCatalogVulnerabilityResponseSchema.shape.severity,
-    vulnerablePackages: z.array(JFrogPackageVersionSchema).describe("List of packages affected by this vulnerability.")
+    vulnerablePackages: z.array(JFrogCatalogPackageVersionSchema).describe("List of packages affected by this vulnerability.")
 });
 
 export const JFrogCatalogVulnerabilityQuerySchema = z.object({
@@ -94,8 +94,8 @@ export const JFrogCatalogVulnerabilityQuerySchema = z.object({
 });
 
 // Type exports
-export type JFrogPackageSchema = z.infer<typeof JFrogPackageSchema>;
-export type JFrogPackageVersionSchema = z.infer<typeof JFrogPackageVersionSchema>;
+export type JFrogCatalogPackageSchema = z.infer<typeof JFrogCatalogPackageSchema>;
+export type JFrogCatalogPackageVersionSchema = z.infer<typeof JFrogCatalogPackageVersionSchema>;
 export type JFrogCatalogLicenseInfoResponseSchema = z.infer<typeof JFrogCatalogLicenseInfoResponseSchema>;
 export type JFrogCatalogPackageVersionResponseSchema = z.infer<typeof JFrogCatalogPackageVersionResponseSchema>;
 export type JFrogCatalogPackageVersionDetailResponseSchema = z.infer<typeof JFrogCatalogPackageVersionDetailResponseSchema>;

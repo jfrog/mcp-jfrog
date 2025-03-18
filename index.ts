@@ -230,33 +230,33 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
       }
 
-      case "jfrog_get_catalog_package_entity": {
-        const args = catalogSchemas.JFrogPackageSchema.parse(request.params.arguments);
-        const results = await catalog.getCatalogPackageEntity(args);
+      case "jfrog_get_package_info": {
+        const args = catalogSchemas.JFrogCatalogPackageSchema.parse(request.params.arguments);
+        const results = await catalog.getPackageInfo(args);
         return {
           content: [{ type: "text", text: JSON.stringify(results, null, 2) }],
         };
       }
 
-      case "jfrog_get_catalog_package_versions": {
-        const args = catalogSchemas.JFrogPackageSchema.parse(request.params.arguments);
-        const results = await catalog.getCatalogPackageVersions(args);
+      case "jfrog_get_package_versions": {
+        const args = catalogSchemas.JFrogCatalogPackageSchema.parse(request.params.arguments);
+        const results = await catalog.getPackageVersions(args);
         return {
           content: [{ type: "text", text: JSON.stringify(results, null, 2) }],
         };
       }
 
-      case "jfrog_get_catalog_package_version_vulnerabilities": {
+      case "jfrog_get_package_version_vulnerabilities": {
         const args = catalogSchemas.JFrogCatalogPackageVersionVulnerabilitiesSchema.parse(request.params.arguments);
-        const results = await catalog.getCatalogPackageVersionVulnerabilities(args);
+        const results = await catalog.getPackageVersionVulnerabilities(args);
         return {
           content: [{ type: "text", text: JSON.stringify(results, null, 2) }],
         };
       }
 
-      case "jfrog_get_catalog_vulnerability_info": {
+      case "jfrog_get_vulnerability_info": {
         const args = catalogSchemas.JFrogCatalogVulnerabilityQuerySchema.parse(request.params.arguments);
-        const results = await catalog.getCatalogVulnerabilityInfo(args);
+        const results = await catalog.getVulnerabilityInfo(args);
         return {
           content: [{ type: "text", text: JSON.stringify(results, null, 2) }],
         };

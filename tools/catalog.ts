@@ -2,17 +2,16 @@ import { z } from "zod";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import { jfrogRequest } from "../common/utils.js";
 import { 
-    JFrogPackageSchema, 
-    JFrogPackageVersionSchema, 
+    JFrogCatalogPackageSchema, 
+    JFrogCatalogPackageVersionSchema, 
     JFrogCatalogPackageVersionResponseSchema,
     JFrogCatalogGraphQLResponseSchema,
-    JFrogCatalogPackageResponseSchema,
     JFrogCatalogVulnerabilityResponseSchema,
     JFrogCatalogPackageVersionVulnerabilitiesSchema,
     JFrogCatalogVulnerabilityQuerySchema
 } from "../schemas/catalog.js";
 
-export async function getCatalogPackageEntity(options: { 
+export async function getPackageInfo(options: { 
     type: string; 
     name: string; 
     version?: string;
@@ -135,7 +134,7 @@ export async function getCatalogPackageEntity(options: {
     return processedData;
 }
 
-export async function getCatalogPackageVersions(options: JFrogPackageSchema) {
+export async function getPackageVersions(options: JFrogCatalogPackageSchema) {
   const query = `query GetCatalogPackageVersions($type: String!, $name: String!, $first: Int) {
       package(type: $type, name: $name) {
         name
@@ -193,7 +192,7 @@ export async function getCatalogPackageVersions(options: JFrogPackageSchema) {
   return JFrogCatalogPackageVersionResponseSchema.array().parse(processedData);
 }
 
-export async function getCatalogPackageVersionVulnerabilities(options: JFrogCatalogPackageVersionVulnerabilitiesSchema) {
+export async function getPackageVersionVulnerabilities(options: JFrogCatalogPackageVersionVulnerabilitiesSchema) {
     const query = `query GetCatalogPackageVersionVulnerabilities(
         $type: String!, 
         $name: String!, 
@@ -260,7 +259,7 @@ export async function getCatalogPackageVersionVulnerabilities(options: JFrogCata
     return JFrogCatalogVulnerabilityResponseSchema.array().parse(processedData);
 }
 
-export async function getCatalogVulnerabilityInfo(options: JFrogCatalogVulnerabilityQuerySchema) {
+export async function getVulnerabilityInfo(options: JFrogCatalogVulnerabilityQuerySchema) {
     const query = `query GetCatalogVulnerabilityInfo(
         $cveId: String!,
         $pageSize: Int!
@@ -348,30 +347,30 @@ export async function getCatalogVulnerabilityInfo(options: JFrogCatalogVulnerabi
 }
 
 const getCatalogPackageEntityTool = {
-    name: "jfrog_get_catalog_package_entity",
+    name: "jfrog_get_package_info",
     description: "Useful for when you need to get publicly available information about a software package. " +
         "it will provide you with the following information on it, if available in public sources: " +
         "a short description of the package, its latest published version, the software license " +
         "this software is distributed under, along with urls of its version control system, " +
         "its homepage and whether it is known to be a malicious package (in any version).",
-    inputSchema: zodToJsonSchema(JFrogPackageVersionSchema),
+    inputSchema: zodToJsonSchema(JFrogCatalogPackageVersionSchema),
 };
 
 const getCatalogPackageVersionsTool = {
-    name: "jfrog_get_catalog_package_versions",
+    name: "jfrog_get_package_versions",
     description: "Useful for when you need to get a list of versions of a publicly available package. " +
         "it can tell you each version's publication date. Can also filter based on version vulnerability status.",
-    inputSchema: zodToJsonSchema(JFrogPackageSchema),
+    inputSchema: zodToJsonSchema(JFrogCatalogPackageSchema),
 };
 
 const getCatalogPackageVersionVulnerabilitiesTool = {
-    name: "jfrog_get_catalog_package_version_vulnerabilities",
+    name: "jfrog_get_package_version_vulnerabilities",
     description: "Useful for when you need the list of known vulnerabilities affecting a specific version of an open source package.",
     inputSchema: zodToJsonSchema(JFrogCatalogPackageVersionVulnerabilitiesSchema),
 };
 
 const getCatalogVulnerabilityInfoTool = {
-    name: "jfrog_get_catalog_vulnerability_info",
+    name: "jfrog_get_vulnerability_info",
     description: "Useful for when you need to get a specific vulnerability information, including its affected packages and versions.",
     inputSchema: zodToJsonSchema(JFrogCatalogVulnerabilityQuerySchema),
 };
