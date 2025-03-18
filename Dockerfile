@@ -1,7 +1,7 @@
 FROM node:current-alpine3.21 AS builder
 
 # Must be entire project because `prepare` script is run during `npm install` and requires all files.
-COPY src/jfrog /app
+COPY . /app
 COPY tsconfig.json /tsconfig.json
 
 WORKDIR /app
