@@ -54,7 +54,8 @@ export function normalizeJFrogBaseUrl(baseUrl: string): string {
 
 export async function jfrogRequest(
   urlPath: string,
-  options: RequestOptions = {}
+  options: RequestOptions = {},
+  postProcess: (data: unknown) => unknown = (x) => x
 ): Promise<unknown> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -80,6 +81,7 @@ export async function jfrogRequest(
     };
 
     const response = await axios(axiosConfig);
+    return postProcess(response.data);
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {

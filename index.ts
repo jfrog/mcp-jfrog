@@ -15,6 +15,7 @@ import * as access from './tools/access.js'
 import * as release_lifecycle from './tools/release_lifecycle.js'
 import * as mission_control from './tools/mission_control.js'
 import * as aql from './tools/aql.js'
+import * as catalog from './tools/catalog.js'
 
 import * as repositorySchemas from './schemas/repositories.js';
 import * as runtimeSchemas from './schemas/runtime.js';
@@ -22,6 +23,7 @@ import * as accessSchemas from './schemas/access.js';
 import * as buildsSchemas from './schemas/builds.js';
 import * as release_lifecycleSchemas from './schemas/release_lifecycle.js';
 import * as aqlSchemas from './schemas/aql.js';
+import * as catalogSchemas from './schemas/catalog.js';
 import { formatJFrogError } from './common/utils.js';
 import {
   isJFrogError,
@@ -219,6 +221,38 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           sort_by: args.sort_by,
           sort_order: args.sort_order
         });
+        return {
+          content: [{ type: "text", text: JSON.stringify(results, null, 2) }],
+        };
+      }
+
+      case "jfrog_get_catalog_package_entity": {
+        const args = catalogSchemas.JFrogPackageSchema.parse(request.params.arguments);
+        const results = await catalog.getCatalogPackageEntity(args);
+        return {
+          content: [{ type: "text", text: JSON.stringify(results, null, 2) }],
+        };
+      }
+
+      case "jfrog_get_catalog_package_versions": {
+        const args = catalogSchemas.JFrogPackageSchema.parse(request.params.arguments);
+        const results = await catalog.getCatalogPackageVersions(args);
+        return {
+          content: [{ type: "text", text: JSON.stringify(results, null, 2) }],
+        };
+      }
+
+      case "jfrog_get_catalog_package_version_vulnerabilities": {
+        const args = catalogSchemas.JFrogCatalogPackageVersionVulnerabilitiesSchema.parse(request.params.arguments);
+        const results = await catalog.getCatalogPackageVersionVulnerabilities(args);
+        return {
+          content: [{ type: "text", text: JSON.stringify(results, null, 2) }],
+        };
+      }
+
+      case "jfrog_get_catalog_vulnerability_info": {
+        const args = catalogSchemas.JFrogCatalogVulnerabilityQuerySchema.parse(request.params.arguments);
+        const results = await catalog.getCatalogVulnerabilityInfo(args);
         return {
           content: [{ type: "text", text: JSON.stringify(results, null, 2) }],
         };
