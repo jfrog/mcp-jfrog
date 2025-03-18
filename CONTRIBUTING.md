@@ -20,7 +20,7 @@ Thank you for your interest in contributing to the JFrog MCP Server! This docume
    ```
 3. Set up environment variables:
    ```bash
-   export JFROG_BASE_URL="https://your-instance.jfrog.io"
+   export JFROG_URL="https://your-instance.jfrog.io"
    export JFROG_ACCESS_TOKEN="your-access-token"
    ```
 

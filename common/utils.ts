@@ -68,7 +68,7 @@ export async function jfrogRequest(
   }
 
 
-  const baseUrl = normalizeJFrogBaseUrl(process.env.JFROG_BASE_URL || "");
+  const baseUrl = normalizeJFrogBaseUrl(process.env.JFROG_URL || "");
   const path = urlPath.startsWith("/") ? urlPath.substring(1) : urlPath;
   const url = baseUrl ? `${baseUrl}${path}` : urlPath;
 

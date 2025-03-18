@@ -277,12 +277,12 @@ Add the following to your `claude_desktop_config.json`:
         "-e",
         "JFROG_ACCESS_TOKEN",
         "-e",
-        "JFROG_BASE_URL",
+        "JFROG_URL",
         "mcp/jfrog"
       ],
       "env": {
         "JFROG_ACCESS_TOKEN": "<YOUR_TOKEN>",
-        "JFROG_BASE_URL": "https://your-instance.jfrog.io" // Your JFrog platform URL
+        "JFROG_URL": "https://your-instance.jfrog.io" // Your JFrog platform URL
       }
     }
   }
@@ -302,7 +302,7 @@ Add the following to your `claude_desktop_config.json`:
       ],
       "env": {
         "JFROG_ACCESS_TOKEN": "<YOUR_TOKEN>",
-        "JFROG_BASE_URL": "https://your-instance.jfrog.io" // Your JFrog platform URL
+        "JFROG_URL": "https://your-instance.jfrog.io" // Your JFrog platform URL
       }
     }
   }
@@ -320,7 +320,7 @@ docker build -t mcp/jfrog -f Dockerfile .
 ## Environment Variables
 
 - `JFROG_ACCESS_TOKEN`: Your JFrog access token (required)
-- `JFROG_BASE_URL`: Base URL for your JFrog platform (required)
+- `JFROG_URL`: Base URL for your JFrog platform (required)
 
 ## Disclaimer
 
