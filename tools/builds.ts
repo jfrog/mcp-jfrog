@@ -32,13 +32,22 @@ import * as buildsSchemas from "../schemas/builds.js";
   const getSpecificBuildTool = {
     name: "jfrog_get_specific_build",
     description: "Get details for a specific build by name, optionally scoped to a project",
-    inputSchema: zodToJsonSchema(buildsSchemas.GetSpecificBuildSchema)
+    inputSchema: zodToJsonSchema(buildsSchemas.GetSpecificBuildSchema),
+    outputSchema: zodToJsonSchema(buildsSchemas.JFrogBuildDetailsSchema),
+    handler: async (args: any) => {
+      const parsedArgs = buildsSchemas.GetSpecificBuildSchema.parse(args);
+      return await getSpecificBuild(parsedArgs.buildName, parsedArgs.project);
+    }
   }
   
   const getAllBuildsTool = {
     name: "jfrog_list_builds",
     description: "return a list of all my build in the jfrog platform",
-    inputSchema: zodToJsonSchema(z.object({}))
+    inputSchema: zodToJsonSchema(z.object({})),
+    outputSchema: zodToJsonSchema(buildsSchemas.JFrogBuildsListSchema),
+    handler: async () => {
+      return await getAllBuilds();
+    }
   }
   /* End of Tools creation Section */ 
 

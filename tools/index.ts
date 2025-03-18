@@ -19,3 +19,12 @@ export const tools =[
   ...CatalogTools,
   ...CurationTools
 ]
+
+// A function that given a tool name, executes the handler with the arguments and returns the result
+export async function executeTool(toolName: string, args: any) {
+  const tool = tools.find(t => t.name === toolName);
+  if (!tool) {
+    throw new Error(`Tool ${toolName} not found`);
+  }
+  return await tool.handler(args);
+}

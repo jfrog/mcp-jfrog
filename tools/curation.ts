@@ -53,6 +53,10 @@ const getCurationPackageStatusTool = {
     description: "Useful for checking the curation status of a specific package version. Returns one of the following statuses: approved, blocked, inconclusive.",
     inputSchema: zodToJsonSchema(GetCurationPackageStatusInputSchema),
     outputSchema: zodToJsonSchema(GetCurationPackageStatusOutputSchema),
+    handler: async (args: any) => {
+      const parsedArgs = GetCurationPackageStatusInputSchema.parse(args);
+      return await getCurationPackageStatus(parsedArgs);
+    }
 };
 
 export const CurationTools = [

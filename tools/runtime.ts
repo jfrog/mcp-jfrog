@@ -55,19 +55,34 @@ export async function getRunningImages(params: z.infer<typeof ListRunningImagesS
 const getAllRuntimeClustersTool = {
   name: "jfrog_list_runtime_clusters",
   description: "return a list of all my runtime clusters in the jfrog platform",
-  inputSchema: zodToJsonSchema(getAllRuntimeClustersSchema)
+  inputSchema: zodToJsonSchema(getAllRuntimeClustersSchema),
+  outputSchema: zodToJsonSchema(JFrogRuntimeClustersListResponseSchema),
+  handler: async (args: any) => {
+    const parsedArgs = getAllRuntimeClustersSchema.parse(args);
+    return await getAllRuntimeClusters(parsedArgs.limit);
+  }
 }
 
 const getRuntimeClusterTool = {
   name: "jfrog_get_runtime_specific_cluster", 
   description: "return a runtime cluster by id",
-  inputSchema: zodToJsonSchema(getRuntimeClusterSchema)
+  inputSchema: zodToJsonSchema(getRuntimeClusterSchema),
+  outputSchema: zodToJsonSchema(JFrogRuntimeClusterDetailedSchema),
+  handler: async (args: any) => {
+    const parsedArgs = getRuntimeClusterSchema.parse(args);
+    return await getRuntimeCluster(parsedArgs.clusterId);
+  }
 }
 
 const listRunningImagesTool = {
   name: "jfrog_list_running_images",
   description: "List all running container images across runtime clusters with their security and operational status",
-  inputSchema: zodToJsonSchema(ListRunningImagesSchema)
+  inputSchema: zodToJsonSchema(ListRunningImagesSchema),
+  outputSchema: zodToJsonSchema(JFrogRuntimeImagesResponseSchema),
+  handler: async (args: any) => {
+    const parsedArgs = ListRunningImagesSchema.parse(args);
+    return await getRunningImages(parsedArgs);
+  }
 }
 
 /* End of Tools creation Section */ 
