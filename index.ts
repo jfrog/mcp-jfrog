@@ -16,6 +16,7 @@ import * as release_lifecycle from './tools/release_lifecycle.js'
 import * as mission_control from './tools/mission_control.js'
 import * as aql from './tools/aql.js'
 import * as catalog from './tools/catalog.js'
+import * as curation from './tools/curation.js';
 
 import * as repositorySchemas from './schemas/repositories.js';
 import * as runtimeSchemas from './schemas/runtime.js';
@@ -24,11 +25,14 @@ import * as buildsSchemas from './schemas/builds.js';
 import * as release_lifecycleSchemas from './schemas/release_lifecycle.js';
 import * as aqlSchemas from './schemas/aql.js';
 import * as catalogSchemas from './schemas/catalog.js';
+import * as curationSchemas from './schemas/curation.js';
 import { formatJFrogError } from './common/utils.js';
 import {
   isJFrogError,
 } from './common/errors.js';
 import { VERSION } from "./common/version.js";
+
+
 
 
 const server = new Server(
@@ -253,6 +257,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       case "jfrog_get_catalog_vulnerability_info": {
         const args = catalogSchemas.JFrogCatalogVulnerabilityQuerySchema.parse(request.params.arguments);
         const results = await catalog.getCatalogVulnerabilityInfo(args);
+        return {
+          content: [{ type: "text", text: JSON.stringify(results, null, 2) }],
+        };
+      }
+
+      case "jfrog_get_package_curation_status": {
+        const args = curationSchemas.GetCurationPackageStatusInputSchema.parse(request.params.arguments);
+        const results = await curation.getCurationPackageStatus(args);
         return {
           content: [{ type: "text", text: JSON.stringify(results, null, 2) }],
         };
