@@ -162,7 +162,6 @@ export async function getPackageVersions(options: JFrogCatalogPackageSchema) {
   };
 
   function processResponse(response: unknown): JFrogCatalogPackageVersionResponseSchema[] {
-    console.log("Raw JFrog Catalog API Response:", JSON.stringify(response, null, 2));
 
     const validatedResponse = JFrogCatalogGraphQLResponseSchema.parse(response);
     if (!validatedResponse.data?.package?.versions?.edges) {

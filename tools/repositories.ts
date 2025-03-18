@@ -32,7 +32,6 @@ export async function createLocalRepository(options: CreateLocalRepositoryOption
     body: options
   });
     
-  console.log(response);
   return JFrogRepositoryCreateResponseSchema.parse(response);
 }
 
