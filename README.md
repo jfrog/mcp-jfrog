@@ -212,7 +212,7 @@ MCP Server for the JFrog Platform API, enabling repository management, build tra
 <details>
 <summary><strong>Catalog and Curation</strong></summary>
 
-21. `get_catalog_package_entity`
+21. `jfrog_get_package_info`
     - Get publicly available information about a software package
     - Inputs:
       - `type` (string): The type of package (pypi, npm, maven, golang, nuget, huggingface, rubygems)
@@ -220,14 +220,14 @@ MCP Server for the JFrog Platform API, enabling repository management, build tra
       - `version` (optional string): The version of the package (default: "latest")
     - Returns: Package information including description, latest version, license, and URLs
 
-22. `get_catalog_package_versions`
+22. `jfrog_get_package_versions`
     - Get a list of versions of a publicly available package with publication dates
     - Inputs:
       - `type` (string): The type of package (pypi, npm, maven, golang, nuget, huggingface, rubygems)
       - `name` (string): The name of the package, as it appears in the package repository
     - Returns: List of package versions with publication dates
 
-23. `get_catalog_package_version_vulnerabilities`
+23. `jfrog_get_package_version_vulnerabilities`
     - Get a list of known vulnerabilities affecting a specific version of an open source package
     - Inputs:
       - `type` (string): The type of package (pypi, npm, maven, golang, nuget, huggingface, rubygems)
@@ -237,7 +237,7 @@ MCP Server for the JFrog Platform API, enabling repository management, build tra
       - `pageCount` (optional number): Number of pages to return (default: 1)
     - Returns: List of vulnerabilities affecting the specified package version
 
-24. `get_catalog_vulnerability_info`
+24. `jfrog_get_vulnerability_info`
     - Get detailed information about a specific vulnerability, including affected packages and versions
     - Inputs:
       - `cve_id` (string): The CVE ID or vulnerability identifier to look up
@@ -245,7 +245,7 @@ MCP Server for the JFrog Platform API, enabling repository management, build tra
       - `pageCount` (optional number): Number of pages to return (default: 1)
     - Returns: Detailed vulnerability information and affected packages
 
-25. `get_package_curation_status`
+25. `jfrog_get_package_curation_status`
     - Check the curation status of a specific package version
     - Inputs:
       - `packageType` (string): The type of package (pypi, npm, maven, golang, nuget, huggingface, rubygems)
