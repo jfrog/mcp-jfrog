@@ -6,6 +6,7 @@ import { AccessTools } from "./access.js"
 import { MissionControlTools } from "./mission_control.js"
 import { AQLTools } from "./aql.js"
 import { CatalogTools } from "./catalog.js"
+import { CurationTools } from "./curation.js"
 
 export const tools =[
   ...RepositoryTools,
@@ -15,5 +16,6 @@ export const tools =[
   ...AccessTools,
   ...MissionControlTools,
   ...AQLTools,
-  ...CatalogTools
+  ...CatalogTools,
+  ...CurationTools
 ]
