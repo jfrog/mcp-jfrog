@@ -41,19 +41,31 @@ import * as accessSchemas from '../schemas/access.js';
   const getAllEnvironmentsTool = {
     name: "jfrog_list_environments",
     description: "Get a list of all environments types (e.g. dev, prod, etc.) in the JFrog platform with their details",
-    inputSchema: zodToJsonSchema(z.object({}))
+    inputSchema: zodToJsonSchema(z.object({})),
+    outputSchema: zodToJsonSchema(z.object({})),
+    handler: async (args: any) => {
+      return await getAllEnvironments();
+    }
   }
 
   const listAllProjectsTool = {
     name: "jfrog_list_projects",
     description: "Get a list of all projects in the JFrog platform with their details",
-    inputSchema: zodToJsonSchema(z.object({}))
+    inputSchema: zodToJsonSchema(z.object({})),
+    outputSchema: zodToJsonSchema(z.object({})),
+    handler: async (args: any) => {
+      return await getAllProjects();
+    }
   }
 
   const createProjectTool = {
     name: "jfrog_create_project",
     description: "Create a new project in the JFrog platform",
-    inputSchema: zodToJsonSchema(accessSchemas.CreateProjectSchema)
+    inputSchema: zodToJsonSchema(accessSchemas.CreateProjectSchema),
+    outputSchema: zodToJsonSchema(accessSchemas.CreateProjectSchema),
+    handler: async (args: any) => {
+      return await createProject(args);
+    }
   }
 
   const getSpecificProjectTool = {
@@ -61,7 +73,11 @@ import * as accessSchemas from '../schemas/access.js';
     description: "Get detailed information about a specific project in the JFrog platform",
     inputSchema: zodToJsonSchema(z.object({
       project_key: z.string().describe("The unique key of the project to retrieve")
-    }))
+    })),
+    outputSchema: zodToJsonSchema(accessSchemas.JFrogProjectSchema),
+    handler: async (args: any) => {
+      return await getSpecificProjectInformation(args.project_key);
+    }
   }
 
   /* End of Tools creation Section */ 

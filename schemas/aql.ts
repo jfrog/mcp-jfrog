@@ -6,7 +6,7 @@ export const AQLSearchSchema = z.object({
   transitive: z.boolean().optional().default(false).describe("Whether to search in remote repositories"),
   domain: z.enum(["items", "builds", "archive.entries", "build.promotions", "releases"]).optional()
     .describe("The primary domain to search in. If not specified, it will be extracted from the query."),
-  limit: z.number().optional().describe("Maximum number of results to return"),
+  limit: z.number().default(50).describe("Maximum number of results to return"),
   offset: z.number().optional().describe("Number of results to skip"),
   include_fields: z.array(z.string()).optional().describe("Fields to include in the results"),
   sort_by: z.string().optional().describe("Field to sort results by"),

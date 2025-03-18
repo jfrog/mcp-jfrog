@@ -54,19 +54,34 @@ import * as release_lifecycleSchemas from '../schemas/release_lifecycle.js';
   const promoteReleaseBundleTool = {
     name: "jfrog_promote_release_bundle",
     description: "Promote a release bundle version by copying or moving its contents",
-    inputSchema: zodToJsonSchema(release_lifecycleSchemas.PromoteReleaseBundleSchema)
+    inputSchema: zodToJsonSchema(release_lifecycleSchemas.PromoteReleaseBundleSchema),
+    outputSchema: zodToJsonSchema(release_lifecycleSchemas.JFrogReleaseBundleResponseSchema),
+    handler: async (args: any) => {
+      const parsedArgs = release_lifecycleSchemas.PromoteReleaseBundleSchema.parse(args);
+      return await promoteReleaseBundle(parsedArgs);
+    }
   }
 
   const createReleaseBundleTool = {
     name: "jfrog_create_release_bundle",
     description: "create a release bundle in the jfrog platform",
-    inputSchema: zodToJsonSchema(release_lifecycleSchemas.CreateReleaseBundleSchema)
+    inputSchema: zodToJsonSchema(release_lifecycleSchemas.CreateReleaseBundleSchema),
+    // outputSchema: zodToJsonSchema(release_lifecycleSchemas.CreateReleaseBundleResponseSchema),
+    handler: async (args: any) => {
+      const parsedArgs = release_lifecycleSchemas.CreateReleaseBundleSchema.parse(args);
+      return await createReleaseBundle(parsedArgs);
+    }
   }
 
   const distributeReleaseBundleTool = {
     name: "jfrog_distribute_release_bundle",
     description: "Distribute a release bundle to a target environment",
-    inputSchema: zodToJsonSchema(release_lifecycleSchemas.DistributeReleaseBundleSchema)
+    inputSchema: zodToJsonSchema(release_lifecycleSchemas.DistributeReleaseBundleSchema),
+    // outputSchema: zodToJsonSchema(release_lifecycleSchemas.DistributeReleaseBundleResponseSchema),
+    handler: async (args: any) => {
+      const parsedArgs = release_lifecycleSchemas.DistributeReleaseBundleSchema.parse(args);
+      return await distributeReleaseBundle(parsedArgs);
+    }
   }
   /* End of Tools creation Section */ 
 
