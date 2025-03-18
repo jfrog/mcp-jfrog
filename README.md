@@ -15,7 +15,8 @@ MCP Server for the JFrog Platform API, enabling repository management, build tra
 
 ## Tools
 
-### Repository Management
+<details>
+<summary><strong>Repository Management</strong></summary>
 
 1. `check_jfrog_availability`
    - Check if JFrog platform is ready and functioning
@@ -88,8 +89,10 @@ MCP Server for the JFrog Platform API, enabling repository management, build tra
      - `sort_by` (optional string): Field to sort results by
      - `sort_order` (optional string): Sort order (asc or desc)
    - Returns: Search results with metadata
+</details>
 
-### Build Management
+<details>
+<summary><strong>Build Management</strong></summary>
 
 8. `list_jfrog_builds`
    - Return a list of all builds in the JFrog platform
@@ -101,8 +104,10 @@ MCP Server for the JFrog Platform API, enabling repository management, build tra
      - `buildName` (string): Name of the build to retrieve
      - `project` (optional string): Project key to scope the build search
    - Returns: Build details
+</details>
 
-### Runtime Management
+<details>
+<summary><strong>Runtime Management</strong></summary>
 
 10. `list_jfrog_runtime_clusters`
     - Return a list of all runtime clusters in the JFrog platform
@@ -126,8 +131,10 @@ MCP Server for the JFrog Platform API, enabling repository management, build tra
       - `statistics` (optional boolean): Whether to include statistics
       - `timePeriod` (optional string): Time period to query
     - Returns: List of running images
+</details>
 
-### Release Lifecycle Management
+<details>
+<summary><strong>Release Lifecycle Management</strong></summary>
 
 13. `create_release_bundle`
     - Create a release bundle in the JFrog platform
@@ -162,8 +169,10 @@ MCP Server for the JFrog Platform API, enabling repository management, build tra
       - `repository_key` (optional string): Repository key
       - `modifications` (optional object): Optional path mapping specifications for artifacts
     - Returns: Distribution operation result
+</details>
 
-### Access Control
+<details>
+<summary><strong>Access Control</strong></summary>
 
 16. `list_jfrog_environments`
     - Get a list of all environments types in the JFrog platform with their details
@@ -190,14 +199,18 @@ MCP Server for the JFrog Platform API, enabling repository management, build tra
       - `admin_privileges` (object): Administrative privileges for the project
       - `storage_quota_bytes` (number): Storage quota in bytes (-1 for unlimited)
     - Returns: Created project details
+</details>
 
-### Mission Control
+<details>
+<summary><strong>Mission Control</strong></summary>
 
 20. `list_jfrog_associated_instances`
     - Get all JFrog Platform Deployment (JPD) instances associated with the current JFrog Platform
     - Returns: List of associated instances
+</details>
 
-### Catalog and Curation
+<details>
+<summary><strong>Catalog and Curation</strong></summary>
 
 21. `get_catalog_package_entity`
     - Get publicly available information about a software package
@@ -239,6 +252,7 @@ MCP Server for the JFrog Platform API, enabling repository management, build tra
       - `packageName` (string): The name of the package, as it appears in the package repository
       - `packageVersion` (string): The version of the package, as it appears in the package repository
     - Returns: Curation status (approved, blocked, or inconclusive)
+</details>
 
 ## Setup
 
