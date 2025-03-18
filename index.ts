@@ -16,12 +16,12 @@ import * as release_lifecycle from './tools/release_lifecycle.js'
 import * as mission_control from './tools/mission_control.js'
 import * as aql from './tools/aql.js'
 
-import * as repositorySchemas from './scehmas/repositories.js';
-import * as runtimeSchemas from './scehmas/runtime.js';
-import * as accessSchemas from './scehmas/access.js';
-import * as buildsSchemas from './scehmas/builds.js';
-import * as release_lifecycleSchemas from './scehmas/release_lifecycle.js';
-import * as aqlSchemas from './scehmas/aql.js';
+import * as repositorySchemas from './schemas/repositories.js';
+import * as runtimeSchemas from './schemas/runtime.js';
+import * as accessSchemas from './schemas/access.js';
+import * as buildsSchemas from './schemas/builds.js';
+import * as release_lifecycleSchemas from './schemas/release_lifecycle.js';
+import * as aqlSchemas from './schemas/aql.js';
 import { formatJFrogError } from './common/utils.js';
 import {
   isJFrogError,

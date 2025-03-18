@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import { jfrogRequest } from "../common/utils.js";
-import * as accessSchemas from '../scehmas/access.js';
+import * as accessSchemas from '../schemas/access.js';
 
   export async function getAllEnvironments() {
     const response = await jfrogRequest("/access/api/v1/environments", {

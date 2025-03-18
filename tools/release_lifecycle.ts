@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import { jfrogRequest } from "../common/utils.js";
-import * as release_lifecycleSchemas from '../scehmas/release_lifecycle.js';
+import * as release_lifecycleSchemas from '../schemas/release_lifecycle.js';
 
 
   /* Api Calls Section */   

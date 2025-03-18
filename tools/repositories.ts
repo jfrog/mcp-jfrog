@@ -10,7 +10,7 @@ import {
   JFrogPlatformReadinessSchema,
   defaultModels,
   SetFolderPropertySchema,
-  ListRepositoriesResponseSchema } from "../scehmas/repositories.js";
+  ListRepositoriesResponseSchema } from "../schemas/repositories.js";
 
 
   /* Api Calls Section */

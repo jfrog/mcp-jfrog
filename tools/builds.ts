@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import { jfrogRequest } from "../common/utils.js";
-import * as buildsSchemas from "../scehmas/builds.js";
+import * as buildsSchemas from "../schemas/builds.js";
 
 
   export async function getAllBuilds() {

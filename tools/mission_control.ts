@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import { jfrogRequest } from "../common/utils.js";
-import * as mission_controlSchemas from '../scehmas/mission_control.js';
+import * as mission_controlSchemas from '../schemas/mission_control.js';
 
 
 export async function getAllJPDInstances() {

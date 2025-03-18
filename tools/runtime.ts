@@ -7,7 +7,7 @@ import {
   JFrogRuntimeClusterDetailedSchema, 
   JFrogRuntimeImagesResponseSchema,
    ListRunningImagesSchema,
-   JFrogRuntimeClustersListResponseSchema  } from "../scehmas/runtime.js";
+   JFrogRuntimeClustersListResponseSchema  } from "../schemas/runtime.js";
 
 
 

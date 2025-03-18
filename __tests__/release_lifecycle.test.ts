@@ -1,4 +1,4 @@
-import { CreateReleaseBundleSchema, PromoteReleaseBundleSchema } from '../scehmas/release_lifecycle.js';
+import { CreateReleaseBundleSchema, PromoteReleaseBundleSchema } from '../schemas/release_lifecycle.js';
 
 describe('Release Lifecycle Schemas', () => {
   describe('CreateReleaseBundleSchema', () => {

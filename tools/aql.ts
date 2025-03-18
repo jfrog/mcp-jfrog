@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import { jfrogRequest } from "../common/utils.js";
-import * as aqlSchemas from "../scehmas/aql.js";
+import * as aqlSchemas from "../schemas/aql.js";
 
 /**
  * Execute an AQL query against the JFrog Artifactory
