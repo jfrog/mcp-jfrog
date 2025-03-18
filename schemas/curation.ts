@@ -1,18 +1,26 @@
 import { z } from "zod";
 
-// Define the input schema for the tool
 export const GetCurationPackageStatusInputSchema = z.object({
-    package_type: z.enum(["pypi", "npm", "maven", "golang", "nuget", "huggingface", "rubygems"]).describe("The type of package."),
-    package_name: z.string().describe("The name of the package, as it appears in the package repository."),
-    package_version: z.string().describe("The version of the package, as it appears in the package repository."),
+    packageType: z.enum(["pypi", "npm", "maven", "golang", "nuget", "huggingface", "rubygems"]).describe("The type of package."),
+    packageName: z.string().describe("The name of the package, as it appears in the package repository."),
+    packageVersion: z.string().describe("The version of the package, as it appears in the package repository.")
 });
 
-// Define the output schema for the tool
 export const GetCurationPackageStatusOutputSchema = z.object({
     status: z.enum(["approved", "blocked", "inconclusive"]).describe("The curation status of the package."),
     details: z.string().optional().describe("Additional details about the curation status."),
+    repositories: z.array(z.object({
+        action: z.string(),
+        repo_name: z.string(),
+        reason: z.string(),
+        policies: z.array(z.object({
+            condition_name: z.string(),
+            policy_name: z.string(),
+            explanation: z.string(),
+            remediation: z.string()
+        })).optional()
+    })).optional().describe("Information about the repositories if IsRepoInformation is true.")
 });
 
-// Type exports
 export type GetCurationPackageStatusInput = z.infer<typeof GetCurationPackageStatusInputSchema>;
 export type GetCurationPackageStatusOutput = z.infer<typeof GetCurationPackageStatusOutputSchema>; 

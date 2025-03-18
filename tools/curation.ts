@@ -22,23 +22,30 @@ export async function getCurationPackageStatus(options: GetCurationPackageStatus
         {
             method: "POST",
             body: JSON.stringify({
-                packageType: options.package_type,
-                packageName: options.package_name,
-                packageVersion: options.package_version
+                packageType: options.packageType,
+                packageName: options.packageName,
+                packageVersion: options.packageVersion
             })
         }
-    ) as CurationStatusResponse;
+    ) as CurationStatusResponse & { repositories: any[] };
 
     const totalApproved = response.summary.total_approved;
     const totalBlocked = response.summary.total_blocked;
 
-    if (totalApproved > 0 && totalBlocked === 0) {
-        return { status: "approved", details: "The package is approved in all repositories." };
-    } else if (totalApproved === 0 && totalBlocked > 0) {
-        return { status: "blocked", details: "The package is blocked in all repositories." };
-    } else {
-        return { status: "inconclusive", details: "The package has mixed curation status across repositories." };
+    const isRepoInformation = true;
+
+    const status = totalApproved > 0 && totalBlocked === 0 ? "approved" : totalApproved === 0 && totalBlocked > 0 ? "blocked" : "inconclusive";
+    const details = totalApproved > 0 && totalBlocked === 0 ? "The package is approved in all repositories." : totalApproved === 0 && totalBlocked > 0 ? "The package is blocked in all repositories." : "The package has mixed curation status across repositories.";
+
+    if (isRepoInformation) {
+        return {
+            status,
+            details,
+            repositories: response.repositories
+        };
     }
+
+    return { status, details };
 }
 
 const getCurationPackageStatusTool = {
