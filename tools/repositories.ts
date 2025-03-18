@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { zodToJsonSchema } from 'zod-to-json-schema';
+import { zodToJsonSchema } from "zod-to-json-schema";
 import { jfrogRequest } from "../common/utils.js";
 import { 
   CreateLocalRepoSchema, 
@@ -13,93 +13,93 @@ import {
   ListRepositoriesResponseSchema } from "../schemas/repositories.js";
 
 
-  /* Api Calls Section */
+/* Api Calls Section */
 
-  export async function checkPlatformReadiness() {
-    const response = await jfrogRequest("/artifactory/api/v1/system/readiness", {
-      method: "GET",
-    });
+export async function checkPlatformReadiness() {
+  const response = await jfrogRequest("/artifactory/api/v1/system/readiness", {
+    method: "GET",
+  });
      
-    return JFrogPlatformReadinessSchema.parse(response);
-  }
+  return JFrogPlatformReadinessSchema.parse(response);
+}
 
 
-  export type CreateLocalRepositoryOptions = z.infer<typeof CreateLocalRepoSchema>;
-  export async function createLocalRepository(options: CreateLocalRepositoryOptions) {
-    console.error('Starting createLocalRepository');
-    const response = await jfrogRequest(`/artifactory/api/repositories/${options.key}`, {
-      method: "PUT",
-      body: options
-    });
+export type CreateLocalRepositoryOptions = z.infer<typeof CreateLocalRepoSchema>;
+export async function createLocalRepository(options: CreateLocalRepositoryOptions) {
+  console.error("Starting createLocalRepository");
+  const response = await jfrogRequest(`/artifactory/api/repositories/${options.key}`, {
+    method: "PUT",
+    body: options
+  });
     
-     console.log(response);
-    return JFrogRepositoryCreateResponseSchema.parse(response);
-  }
+  console.log(response);
+  return JFrogRepositoryCreateResponseSchema.parse(response);
+}
 
-  export async function setFolderProperty(folderPath: string, properties: Record<string, string>, recursive: boolean = false) {
-    // Convert properties object to query string format
-    const propsQuery = Object.entries(properties)
-      .map(([key, value]) => `${key}=${value}`)
-      .join(';');
+export async function setFolderProperty(folderPath: string, properties: Record<string, string>, recursive = false) {
+  // Convert properties object to query string format
+  const propsQuery = Object.entries(properties)
+    .map(([key, value]) => `${key}=${value}`)
+    .join(";");
 
-    const url = `/artifactory/api/storage/${folderPath}?properties=${propsQuery}&recursive=${recursive ? 1 : 0}`;
+  const url = `/artifactory/api/storage/${folderPath}?properties=${propsQuery}&recursive=${recursive ? 1 : 0}`;
 
-    const response = await jfrogRequest(url, {
-      method: "PUT"
-    });
+  const response = await jfrogRequest(url, {
+    method: "PUT"
+  });
 
-    return response;
-  }
+  return response;
+}
 
-  export async function listRepositories(params?: z.infer<typeof ListRepositoriesParamsSchema>) {
-    let url = '/artifactory/api/repositories';
+export async function listRepositories(params?: z.infer<typeof ListRepositoriesParamsSchema>) {
+  let url = "/artifactory/api/repositories";
     
-    if (params) {
-      const queryParams = new URLSearchParams();
-      if (params.type) queryParams.append('type', params.type);
-      if (params.packageType) queryParams.append('packageType', params.packageType);
-      if (params.project) queryParams.append('project', params.project);
+  if (params) {
+    const queryParams = new URLSearchParams();
+    if (params.type) queryParams.append("type", params.type);
+    if (params.packageType) queryParams.append("packageType", params.packageType);
+    if (params.project) queryParams.append("project", params.project);
       
-      const queryString = queryParams.toString();
-      if (queryString) {
-        url += `?${queryString}`;
-      }
+    const queryString = queryParams.toString();
+    if (queryString) {
+      url += `?${queryString}`;
     }
-
-    const response = await jfrogRequest(url, {
-      method: "GET"
-    });
-
-    return ListRepositoriesResponseSchema.parse(response);
   }
 
-  export async function createRemoteRepository(options: z.infer<typeof CreateRemoteRepoSchema>) {
-    // If packageType is provided but URL is not, use default URL from packageType defaults
-    if (options.packageType && !options.url) {
-      options.url = defaultModels[options.packageType] || "";
-    }
+  const response = await jfrogRequest(url, {
+    method: "GET"
+  });
 
-    const response = await jfrogRequest(`/artifactory/api/repositories/${options.key}`, {
-      method: "PUT",
-      body: options
-    });
+  return ListRepositoriesResponseSchema.parse(response);
+}
+
+export async function createRemoteRepository(options: z.infer<typeof CreateRemoteRepoSchema>) {
+  // If packageType is provided but URL is not, use default URL from packageType defaults
+  if (options.packageType && !options.url) {
+    options.url = defaultModels[options.packageType] || "";
+  }
+
+  const response = await jfrogRequest(`/artifactory/api/repositories/${options.key}`, {
+    method: "PUT",
+    body: options
+  });
      
-    return JFrogRepositoryCreateResponseSchema.parse(response);
-  }
+  return JFrogRepositoryCreateResponseSchema.parse(response);
+}
 
-  export async function createVirtualRepository(options: z.infer<typeof CreateVirtualRepoSchema>) {
-    const response = await jfrogRequest(`/artifactory/api/repositories/${options.key}`, {
-      method: "PUT",
-      body: options
-    });
+export async function createVirtualRepository(options: z.infer<typeof CreateVirtualRepoSchema>) {
+  const response = await jfrogRequest(`/artifactory/api/repositories/${options.key}`, {
+    method: "PUT",
+    body: options
+  });
      
-    return JFrogRepositoryCreateResponseSchema.parse(response);
-  }
+  return JFrogRepositoryCreateResponseSchema.parse(response);
+}
 
-  /* End of Api Calls Section */
+/* End of Api Calls Section */
 
 
-  /* Tools Section */
+/* Tools Section */
   
 const checkJfrogAvailabilityTool = {
   name: "jfrog_check_availability",
@@ -109,7 +109,7 @@ const checkJfrogAvailabilityTool = {
   handler: async () => {
     return await checkPlatformReadiness();
   }
-}
+};
 
 const setFolderPropertyTool = {
   name: "jfrog_set_folder_property",
@@ -120,7 +120,7 @@ const setFolderPropertyTool = {
     const parsedArgs = SetFolderPropertySchema.parse(args);
     return await setFolderProperty(parsedArgs.folderPath, parsedArgs.properties, parsedArgs.recursive);
   }
-}
+};
 
 const createLocalRepositoryTool = {
   name: "jfrog_create_local_repository",
@@ -131,7 +131,7 @@ const createLocalRepositoryTool = {
     const parsedArgs = CreateLocalRepoSchema.parse(args);
     return await createLocalRepository(parsedArgs);
   }
-}
+};
 
 const createRemoteRepositoryTool = {
   name: "jfrog_create_remote_repository",
@@ -142,7 +142,7 @@ const createRemoteRepositoryTool = {
     const parsedArgs = CreateRemoteRepoSchema.parse(args);
     return await createRemoteRepository(parsedArgs);
   }
-}
+};
 
 const createVirtualRepositoryTool = {
   name: "jfrog_create_virtual_repository",
@@ -153,7 +153,7 @@ const createVirtualRepositoryTool = {
     const parsedArgs = CreateVirtualRepoSchema.parse(args);
     return await createVirtualRepository(parsedArgs);
   }
-}
+};
 
 const listRepositoriesTool = {
   name: "jfrog_list_repositories",
@@ -164,7 +164,7 @@ const listRepositoriesTool = {
     const parsedArgs = ListRepositoriesParamsSchema.parse(args);
     return await listRepositories(parsedArgs);
   }
-}
+};
 
 export const RepositoryTools =[ 
   checkJfrogAvailabilityTool,
@@ -173,6 +173,6 @@ export const RepositoryTools =[
   createVirtualRepositoryTool,
   setFolderPropertyTool,
   listRepositoriesTool
-]
+];
  
 /* End of Tools creation Section */

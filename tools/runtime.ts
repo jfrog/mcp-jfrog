@@ -1,13 +1,13 @@
 import { z } from "zod";
-import { zodToJsonSchema } from 'zod-to-json-schema';
+import { zodToJsonSchema } from "zod-to-json-schema";
 import { buildUrl, jfrogRequest } from "../common/utils.js";
 import { 
   getAllRuntimeClustersSchema, 
   getRuntimeClusterSchema, 
   JFrogRuntimeClusterDetailedSchema, 
   JFrogRuntimeImagesResponseSchema,
-   ListRunningImagesSchema,
-   JFrogRuntimeClustersListResponseSchema  } from "../schemas/runtime.js";
+  ListRunningImagesSchema,
+  JFrogRuntimeClustersListResponseSchema  } from "../schemas/runtime.js";
 
 
 
@@ -61,7 +61,7 @@ const getAllRuntimeClustersTool = {
     const parsedArgs = getAllRuntimeClustersSchema.parse(args);
     return await getAllRuntimeClusters(parsedArgs.limit);
   }
-}
+};
 
 const getRuntimeClusterTool = {
   name: "jfrog_get_runtime_specific_cluster", 
@@ -72,7 +72,7 @@ const getRuntimeClusterTool = {
     const parsedArgs = getRuntimeClusterSchema.parse(args);
     return await getRuntimeCluster(parsedArgs.clusterId);
   }
-}
+};
 
 const listRunningImagesTool = {
   name: "jfrog_list_running_images",
@@ -83,7 +83,7 @@ const listRunningImagesTool = {
     const parsedArgs = ListRunningImagesSchema.parse(args);
     return await getRunningImages(parsedArgs);
   }
-}
+};
 
 /* End of Tools creation Section */ 
 
@@ -91,5 +91,5 @@ export const RuntimeTools = [
   getAllRuntimeClustersTool,
   getRuntimeClusterTool,
   listRunningImagesTool
-]
+];
   

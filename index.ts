@@ -6,12 +6,12 @@ import {
   ListToolsRequestSchema,
   
 } from "@modelcontextprotocol/sdk/types.js";
-import {executeTool, tools as JFrogTools} from './tools/index.js'
-import { z } from 'zod';
-import { formatJFrogError } from './common/utils.js';
+import {executeTool, tools as JFrogTools} from "./tools/index.js";
+import { z } from "zod";
+import { formatJFrogError } from "./common/utils.js";
 import {
   isJFrogError,
-} from './common/errors.js';
+} from "./common/errors.js";
 import { VERSION } from "./common/version.js";
 
 

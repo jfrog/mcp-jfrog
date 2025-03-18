@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { zodToJsonSchema } from 'zod-to-json-schema';
+import { zodToJsonSchema } from "zod-to-json-schema";
 import { jfrogRequest } from "../common/utils.js";
 import * as aqlSchemas from "../schemas/aql.js";
 
@@ -18,35 +18,35 @@ export async function executeAQLQuery(
     offset?: number;
     include_fields?: string[];
     sort_by?: string;
-    sort_order?: 'asc' | 'desc';
+    sort_order?: "asc" | "desc";
   } = {}
 ): Promise<any> {
   let aqlQuery = query;
   
   // If the query doesn't already have a domain specified, add it
-  if (options.domain && !aqlQuery.includes('.find(')) {
+  if (options.domain && !aqlQuery.includes(".find(")) {
     aqlQuery = `${options.domain}.find(${aqlQuery})`;
   }
   
   // Add include fields if specified
-  if (options.include_fields && options.include_fields.length > 0 && !aqlQuery.includes('.include(')) {
-    const includeFields = options.include_fields.map(field => `"${field}"`).join(',');
+  if (options.include_fields && options.include_fields.length > 0 && !aqlQuery.includes(".include(")) {
+    const includeFields = options.include_fields.map(field => `"${field}"`).join(",");
     aqlQuery = `${aqlQuery}.include(${includeFields})`;
   }
   
   // Add sorting if specified
-  if (options.sort_by && !aqlQuery.includes('.sort(')) {
-    const sortOrder = options.sort_order || 'asc';
+  if (options.sort_by && !aqlQuery.includes(".sort(")) {
+    const sortOrder = options.sort_order || "asc";
     aqlQuery = `${aqlQuery}.sort({"$${sortOrder}":["${options.sort_by}"]})`;
   }
   
   // Add limit if specified
-  if (options.limit && !aqlQuery.includes('.limit(')) {
+  if (options.limit && !aqlQuery.includes(".limit(")) {
     aqlQuery = `${aqlQuery}.limit(${options.limit})`;
   }
   
   // Add offset if specified
-  if (options.offset && !aqlQuery.includes('.offset(')) {
+  if (options.offset && !aqlQuery.includes(".offset(")) {
     aqlQuery = `${aqlQuery}.offset(${options.offset})`;
   }
   
@@ -76,20 +76,20 @@ const executeAQLQueryTool = {
   handler: async (args: any) => {
 
     const parsedArgs = aqlSchemas.AQLSearchSchema.parse(args);
-        const results = await executeAQLQuery(args.query, {
-          transitive: parsedArgs.transitive,
-          domain: parsedArgs.domain,
-          limit: parsedArgs.limit,
-          offset: parsedArgs.offset,
-          include_fields: parsedArgs.include_fields,
-          sort_by: parsedArgs.sort_by,
-          sort_order: parsedArgs.sort_order
-        });
-        return {
-          content: [{ type: "text", text: JSON.stringify(results, null, 2) }],
-        };
-      }
-  };
+    const results = await executeAQLQuery(args.query, {
+      transitive: parsedArgs.transitive,
+      domain: parsedArgs.domain,
+      limit: parsedArgs.limit,
+      offset: parsedArgs.offset,
+      include_fields: parsedArgs.include_fields,
+      sort_by: parsedArgs.sort_by,
+      sort_order: parsedArgs.sort_order
+    });
+    return {
+      content: [{ type: "text", text: JSON.stringify(results, null, 2) }],
+    };
+  }
+};
 
 /* End of Tools creation Section */
 

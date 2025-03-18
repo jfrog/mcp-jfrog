@@ -1,7 +1,7 @@
 import { getUserAgent } from "universal-user-agent";
 import { createJFrogError } from "./errors.js";
 import { VERSION } from "./version.js";
-import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import {
   JFrogError,
   JFrogValidationError,
@@ -11,7 +11,7 @@ import {
   JFrogRateLimitError,
   JFrogConflictError,
   isJFrogError,
-} from './errors.js';
+} from "./errors.js";
 type RequestOptions = {
   method?: string;
   body?: unknown;
@@ -21,7 +21,7 @@ type RequestOptions = {
 
 
 async function parseResponseBody(response: AxiosResponse): Promise<unknown> {
-  const contentType = response.headers['content-type'];
+  const contentType = response.headers["content-type"];
   if (contentType?.includes("application/json")) {
     return response.data;
   }
@@ -47,9 +47,9 @@ const USER_AGENT = `modelcontextprotocol/servers/jfrog/v${VERSION} ${getUserAgen
  */
 export function normalizeJFrogBaseUrl(baseUrl: string): string {
   if (!baseUrl) {
-    return '';
+    return "";
   }
-  return baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+  return baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
 }
 
 export async function jfrogRequest(
@@ -68,8 +68,8 @@ export async function jfrogRequest(
   }
 
 
-  const baseUrl = normalizeJFrogBaseUrl(process.env.JFROG_BASE_URL || '');
-  const path = urlPath.startsWith('/') ? urlPath.substring(1) : urlPath;
+  const baseUrl = normalizeJFrogBaseUrl(process.env.JFROG_BASE_URL || "");
+  const path = urlPath.startsWith("/") ? urlPath.substring(1) : urlPath;
   const url = baseUrl ? `${baseUrl}${path}` : urlPath;
 
   try {
