@@ -1,0 +1,31 @@
+# Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml
+
+startCommand:
+  type: stdio
+  configSchema:
+    # JSON Schema defining the configuration options for the MCP.
+    type: object
+    required:
+      - jfrogAccessToken
+      - jfrogUrl
+    properties:
+      jfrogAccessToken:
+        type: string
+        description: Your JFrog access token
+      jfrogUrl:
+        type: string
+        description: Base URL for your JFrog platform instance
+  commandFunction:
+    # A JS function that produces the CLI command based on the given config to start the MCP on stdio.
+    |-
+    (config) => ({
+      command: 'node',
+      args: ['dist/index.js'],
+      env: {
+        JFROG_ACCESS_TOKEN: config.jfrogAccessToken,
+        JFROG_URL: config.jfrogUrl
+      }
+    })
+  exampleConfig:
+    jfrogAccessToken: MY_FAKE_ACCESS_TOKEN
+    jfrogUrl: https://example.jfrog.io
