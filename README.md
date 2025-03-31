@@ -1,5 +1,7 @@
 # JFrog MCP Server (🧪 Experimental)
 
+[![smithery badge](https://smithery.ai/badge/@jfrog/mcp-jfrog)](https://smithery.ai/server/@jfrog/mcp-jfrog)
+
 Model Context Protocol (MCP) Server for the JFrog Platform API, enabling repository management, build tracking, release lifecycle management, and more.
 
 ## Disclaimer
@@ -210,6 +212,14 @@ This is an experimental project intended to demonstrate JFrog's capabilities wit
 </details>
 
 ## Setup
+
+### Installing via Smithery
+
+To install mcp-jfrog for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@jfrog/mcp-jfrog):
+
+```bash
+npx -y @smithery/cli install @jfrog/mcp-jfrog --client claude
+```
 
 ### Prerequisites
 
