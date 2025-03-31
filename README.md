@@ -249,9 +249,13 @@ Your JFrog platform instance URL (e.g. https://acme.jfrog.io)
 
 ### How to build
 
-Clone the repo to your local machine using `git clone`.
+Clone the repo to your local machine using `git clone` and `cd` into the project directory:
 
-`cd` into the project directory and run the relevant build command:
+```bash
+git clone git@github.com:jfrog/mcp-jfrog.git
+
+cd mcp-jfrog
+```
 
 Build as a Docker image:
 
