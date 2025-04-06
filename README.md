@@ -4,6 +4,10 @@
 
 Model Context Protocol (MCP) Server for the JFrog Platform API, enabling repository management, build tracking, release lifecycle management, and more.
 
+
+https://github.com/user-attachments/assets/aca3af2b-f294-41c8-8727-799a019a55b5
+
+
 ## Disclaimer
 This is an experimental project intended to demonstrate JFrog's capabilities with MCP. It is not officially supported or verified by JFrog.
 
