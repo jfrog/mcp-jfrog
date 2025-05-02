@@ -236,6 +236,9 @@ npx -y @smithery/cli install @jfrog/mcp-jfrog --client claude
 
 - `JFROG_ACCESS_TOKEN`: Your JFrog access token (required)
 - `JFROG_URL`: Base URL for your JFrog platform (required)
+- `TRANSPORT`: Transport mode to use, set to 'sse' to enable SSE transport (default: stdio)
+- `PORT`: Port number to use for SSE transport (default: 8080)
+- `CORS_ORIGIN`: CORS origin allowed for SSE connections (default: '*')
 
 ### JFrog Token (`JFROG_ACCESS_TOKEN`)
 To use this MCP server, you need to create a JFrog Access Token or use an Idenetity token with appropriate permissions:
@@ -335,6 +338,44 @@ Add the following to your `~/.cursor/mcp.json`:
   }
 }
 ```
+
+### SSE Transport Mode
+
+To use the JFrog MCP Server with SSE transport mode (useful for web interfaces like Cursor's webview):
+
+```json
+{
+  "mcpServers": { 
+    "jfrog-sse": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-p",
+        "8080:8080",
+        "-e",
+        "TRANSPORT=sse",
+        "-e",
+        "PORT=8080",
+        "-e",
+        "CORS_ORIGIN=*",
+        "-e",
+        "JFROG_ACCESS_TOKEN",
+        "-e",
+        "JFROG_URL",
+        "mcp/jfrog"
+      ],
+      "env": {
+        "JFROG_ACCESS_TOKEN": "<YOUR_TOKEN>",
+        "JFROG_URL": "https://your-instance.jfrog.io"
+      },
+      "serverUrl": "http://localhost:8080/sse"
+    }
+  }
+}
+```
+
+Note: For SSE mode, you need to add the `serverUrl` parameter pointing to your SSE endpoint, and expose the port used by the server (-p 8080:8080).
 </details>
 
 <details>
@@ -384,6 +425,42 @@ Add the following to your `claude_desktop_config.json`:
         "JFROG_ACCESS_TOKEN": "ACCESS_TOKEN",
         "JFROG_URL": "https://<YOUR_JFROG_INSTANCE_URL>"
       }
+    }
+  }
+}
+```
+
+### SSE Transport Mode
+
+For Claude Desktop with SSE transport:
+
+```json
+{
+  "mcpServers": { 
+    "jfrog-sse": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-p",
+        "8080:8080",
+        "-e",
+        "TRANSPORT=sse",
+        "-e",
+        "PORT=8080",
+        "-e",
+        "CORS_ORIGIN=*",
+        "-e",
+        "JFROG_ACCESS_TOKEN",
+        "-e",
+        "JFROG_URL",
+        "mcp/jfrog"
+      ],
+      "env": {
+        "JFROG_ACCESS_TOKEN": "<YOUR_TOKEN>",
+        "JFROG_URL": "https://your-instance.jfrog.io"
+      },
+      "serverUrl": "http://localhost:8080/sse"
     }
   }
 }
