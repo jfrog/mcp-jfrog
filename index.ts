@@ -22,7 +22,13 @@ declare const process: {
   env: Record<string, string | undefined>;
   exit: (code: number) => void;
   on: (event: string, listener: (...args: any[]) => void) => void;
+  uptime: () => number;
 };
+
+// Extend the SSEServerTransport interface to add messageCount property
+interface ExtendedSSEServerTransport extends SSEServerTransport {
+  messageCount?: number;
+}
 
 // Configure logging levels
 enum LogLevel {
@@ -181,40 +187,70 @@ async function runServer() {
         id,
         connectedAt: conn.connectedAt,
         age: Date.now() - conn.connectedAt.getTime(),
-        userAgent: conn.res.req.headers['user-agent'] || 'unknown'
+        userAgent: conn.res.req.headers['user-agent'] || 'unknown',
+        isCursorClient: conn.isCursorClient,
+        remoteAddress: conn.res.req.ip || conn.res.req.connection?.remoteAddress || 'unknown',
+        messagesSent: conn.transport.messageCount || 0,
+        lastActivity: conn.lastActivity || conn.connectedAt
       }));
       
       res.status(200).json({
         total: connections.size,
-        connections: connectionsInfo
+        connections: connectionsInfo,
+        uptime: process.uptime(),
+        timestamp: new Date().toISOString()
       });
     });
     
     // SSE connection management
     let connections = new Map<string, { 
-      transport: SSEServerTransport, 
+      transport: ExtendedSSEServerTransport, 
       res: express.Response, 
-      connectedAt: Date 
+      connectedAt: Date,
+      isCursorClient: boolean,
+      lastActivity: Date
     }>();
     
     // Setup SSE endpoint
     app.get('/sse', (req, res) => {
-      const connectionId = req.query.connectionId?.toString() || `conn_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+      // Extract connectionId from query params, cookies, or generate a new one
+      const connectionIdFromQuery = req.query.connectionId?.toString();
+      const connectionIdFromCookie = req.headers.cookie?.split(';')
+        .map(cookie => cookie.trim())
+        .find(cookie => cookie.startsWith('connectionId='))
+        ?.split('=')[1];
+      
+      const connectionId = connectionIdFromQuery || connectionIdFromCookie || `conn_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+      
+      // Set a cookie for clients that don't provide connectionId
+      if (!connectionIdFromQuery && !connectionIdFromCookie) {
+        res.setHeader('Set-Cookie', `connectionId=${connectionId}; Path=/; SameSite=Strict`);
+      }
+      
+      // Detect if this is a Cursor MCP client
+      const userAgent = req.headers['user-agent'] || '';
+      const isCursorClient = userAgent.includes('Cursor') || userAgent.includes('VSCode');
       
       log(LogLevel.INFO, `SSE connection established`, { 
         connectionId,
         userAgent: req.headers['user-agent'],
-        remoteAddress: req.ip
+        remoteAddress: req.ip,
+        fromQuery: !!connectionIdFromQuery,
+        fromCookie: !!connectionIdFromCookie,
+        isCursorClient
       });
       
       // Create transport instance
-      const transport = new SSEServerTransport('/messages', res);
+      const transport = new SSEServerTransport('/messages', res) as ExtendedSSEServerTransport;
+      transport.messageCount = 0;
       
-      // Keep track of connection
+      // Keep track of connection with client info
       connections.set(connectionId, { 
         transport, 
         res, 
-        connectedAt: new Date() 
+        connectedAt: new Date(),
+        isCursorClient,
+        lastActivity: new Date()
       });
       
       // Connect server to transport
@@ -239,13 +275,25 @@ async function runServer() {
     
     // Setup messages endpoint for client-to-server communication
     app.post('/messages', express.json({ limit: '1mb' }), (req, res) => {
-      const connectionId = req.query.connectionId?.toString();
+      // Try to get connectionId from query params first, then from cookies
+      let connectionId = req.query.connectionId?.toString();
+      
+      // If not in query, try to get it from cookies
+      if (!connectionId) {
+        connectionId = req.headers.cookie?.split(';')
+          .map(cookie => cookie.trim())
+          .find(cookie => cookie.startsWith('connectionId='))
+          ?.split('=')[1];
+      }
       
       if (!connectionId) {
-        log(LogLevel.WARN, 'Message received without connectionId');
+        log(LogLevel.WARN, 'Message received without connectionId', {
+          headers: JSON.stringify(req.headers),
+          cookies: req.headers.cookie
+        });
         return res.status(400).json({ 
           error: 'Missing connectionId parameter', 
-          message: 'You must provide a connectionId query parameter matching your SSE connection'
+          message: 'You must provide a connectionId query parameter or cookie matching your SSE connection'
         });
       }
       
@@ -256,8 +304,18 @@ async function runServer() {
           body: typeof req.body === 'object' ? JSON.stringify(req.body).substring(0, 100) : 'invalid'
         });
         
+        // Update last activity time
+        connection.lastActivity = new Date();
+        
         try {
           connection.transport.handlePostMessage(req, res);
+          
+          // Increment message count if property exists
+          if (typeof connection.transport.messageCount === 'number') {
+            connection.transport.messageCount++;
+          } else {
+            connection.transport.messageCount = 1;
+          }
         } catch (error) {
           log(LogLevel.ERROR, `Error handling message: ${error instanceof Error ? error.message : String(error)}`, {
             connectionId,
