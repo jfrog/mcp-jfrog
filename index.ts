@@ -25,6 +25,11 @@ declare const process: {
   uptime: () => number;
 };
 
+// Add NodeJS.Timeout declaration
+declare namespace NodeJS {
+  interface Timeout {}
+}
+
 // Extend the SSEServerTransport interface to add messageCount property
 interface ExtendedSSEServerTransport extends SSEServerTransport {
   messageCount?: number;
@@ -191,7 +196,8 @@ async function runServer() {
         isCursorClient: conn.isCursorClient,
         remoteAddress: conn.res.req.ip || conn.res.req.connection?.remoteAddress || 'unknown',
         messagesSent: conn.transport.messageCount || 0,
-        lastActivity: conn.lastActivity || conn.connectedAt
+        lastActivity: conn.lastActivity || conn.connectedAt,
+        hasKeepAlive: !!conn.keepAliveInterval
       }));
       
       res.status(200).json({
@@ -208,7 +214,8 @@ async function runServer() {
       res: express.Response, 
       connectedAt: Date,
       isCursorClient: boolean,
-      lastActivity: Date
+      lastActivity: Date,
+      keepAliveInterval: NodeJS.Timeout
     }>();
     
     // Setup SSE endpoint
@@ -231,6 +238,9 @@ async function runServer() {
       const userAgent = req.headers['user-agent'] || '';
       const isCursorClient = userAgent.includes('Cursor') || userAgent.includes('VSCode');
       
+      // Set proper headers for SSE (in case SDK transport doesn't set them)
+      res.setHeader('X-Accel-Buffering', 'no'); // Important for nginx proxies
+      
       log(LogLevel.INFO, `SSE connection established`, { 
         connectionId,
         userAgent: req.headers['user-agent'],
@@ -244,13 +254,29 @@ async function runServer() {
       const transport = new SSEServerTransport('/messages', res) as ExtendedSSEServerTransport;
       transport.messageCount = 0;
       
+      // Send a comment to keep the connection alive
+      const keepAliveInterval = setInterval(() => {
+        try {
+          res.write(`:keepalive ${new Date().toISOString()}\n\n`);
+        } catch (err) {
+          // If we can't write to the response, the connection is probably closed
+          clearInterval(keepAliveInterval);
+          // Remove from connections if it still exists
+          if (connections.has(connectionId)) {
+            log(LogLevel.INFO, `Connection closed during keepalive`, { connectionId });
+            connections.delete(connectionId);
+          }
+        }
+      }, 30000); // Send keepalive every 30 seconds
+      
       // Keep track of connection with client info
       connections.set(connectionId, { 
         transport, 
         res, 
         connectedAt: new Date(),
         isCursorClient,
-        lastActivity: new Date()
+        lastActivity: new Date(),
+        keepAliveInterval
       });
       
       // Connect server to transport
@@ -264,6 +290,9 @@ async function runServer() {
       // Clean up on client disconnect
       req.on('close', () => {
         log(LogLevel.INFO, `SSE connection closed`, { connectionId });
+        
+        // Clear the keepalive interval
+        clearInterval(keepAliveInterval);
         
         // Clean up
         connections.delete(connectionId);
@@ -329,7 +358,38 @@ async function runServer() {
         connection.lastActivity = new Date();
         
         try {
-          connection.transport.handlePostMessage(req, res);
+          // Clone the request body to avoid issues with stream handling
+          const requestBody = JSON.parse(JSON.stringify(req.body));
+          
+          // Direct forwarding of the request to avoid any potential stream handling issues
+          const transport = connection.transport;
+          
+          if (typeof requestBody.jsonrpc === 'string') {
+            // Use a more direct approach to handle the message
+            if (typeof transport.onmessage === 'function') {
+              // Forward the JSON-RPC message directly to the transport's message handler
+              const requestId = requestBody.id;
+              transport.onmessage({ 
+                jsonrpc: requestBody.jsonrpc,
+                id: requestId,
+                method: requestBody.method,
+                params: requestBody.params
+              });
+              
+              // Send a default success response
+              res.status(200).json({
+                jsonrpc: "2.0",
+                id: requestId,
+                result: {} // Empty result to acknowledge receipt
+              });
+            } else {
+              // Fallback to using handlePostMessage if onmessage isn't available
+              connection.transport.handlePostMessage(req, res);
+            }
+          } else {
+            // If it's not a JSON-RPC message, use the standard handler
+            connection.transport.handlePostMessage(req, res);
+          }
           
           // Increment message count if property exists
           if (typeof connection.transport.messageCount === 'number') {
@@ -375,7 +435,8 @@ async function runServer() {
       log(LogLevel.DEBUG, `Root POST request received`, {
         hasConnection: !!mostRecentConnection,
         connectionCount: connections.size,
-        userAgent: req.headers['user-agent']
+        userAgent: req.headers['user-agent'],
+        body: typeof req.body === 'object' ? JSON.stringify(req.body).substring(0, 100) : 'invalid'
       });
       
       if (mostRecentConnection) {
@@ -388,8 +449,37 @@ async function runServer() {
           // Update last activity time
           mostRecentConnection.connection.lastActivity = new Date();
           
-          // Use the most recent connection's transport to handle the message
-          mostRecentConnection.connection.transport.handlePostMessage(req, res);
+          // IMPORTANT: Clone the request body to avoid issues with stream handling
+          const requestBody = JSON.parse(JSON.stringify(req.body));
+          
+          // Direct forwarding of the request to avoid any potential stream handling issues
+          const transport = mostRecentConnection.connection.transport;
+          
+          if (typeof requestBody.jsonrpc !== 'string') {
+            throw new Error('Invalid JSON-RPC request');
+          }
+          
+          // Use a more direct approach to handle the message
+          if (typeof transport.onmessage === 'function') {
+            // Forward the JSON-RPC message directly to the transport's message handler
+            const requestId = requestBody.id;
+            transport.onmessage({ 
+              jsonrpc: requestBody.jsonrpc,
+              id: requestId,
+              method: requestBody.method,
+              params: requestBody.params
+            });
+            
+            // Send a default success response
+            res.status(200).json({
+              jsonrpc: "2.0",
+              id: requestId,
+              result: {} // Empty result to acknowledge receipt
+            });
+          } else {
+            // Fallback to using handlePostMessage if onmessage isn't available
+            transport.handlePostMessage(req, res);
+          }
           
           // Increment message count
           if (typeof mostRecentConnection.connection.transport.messageCount === 'number') {
