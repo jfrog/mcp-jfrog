@@ -17,7 +17,30 @@ import { VERSION } from "./common/version.js";
 import express from "express";
 import cors from "cors";
 
+// Configure logging levels
+enum LogLevel {
+  DEBUG = 0,
+  INFO = 1,
+  WARN = 2,
+  ERROR = 3,
+}
 
+// Get log level from environment or default to INFO
+const LOG_LEVEL = process.env.LOG_LEVEL ? 
+  (LogLevel[process.env.LOG_LEVEL as keyof typeof LogLevel] ?? LogLevel.INFO) : 
+  LogLevel.INFO;
+
+// Logger function with timestamps and levels
+function log(level: LogLevel, message: string, meta?: any) {
+  if (level >= LOG_LEVEL) {
+    const timestamp = new Date().toISOString();
+    const levelName = LogLevel[level];
+    const metaStr = meta ? ` ${JSON.stringify(meta)}` : '';
+    console.error(`[${timestamp}] [${levelName}] ${message}${metaStr}`);
+  }
+}
+
+// Initialize the server
 const server = new Server(
   {
     name: "jfrog-mcp-server",
@@ -30,8 +53,11 @@ const server = new Server(
   }
 );
 
+// Register available tools
+log(LogLevel.INFO, `Registering ${JFrogTools.length} tools`);
 
 server.setRequestHandler(ListToolsRequestSchema, async () => {
+  log(LogLevel.DEBUG, "Handling ListToolsRequest");
   return {
     tools: JFrogTools
   };
@@ -39,22 +65,43 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   try {
+    const toolName = request.params.name;
+    log(LogLevel.DEBUG, `Handling CallToolRequest for tool: ${toolName}`, { 
+      arguments: request.params.arguments ? JSON.stringify(request.params.arguments).substring(0, 100) + '...' : 'none'
+    });
+    
     if (!request.params.arguments) {
       throw new Error("Arguments are required");
     }
-    const results = await executeTool(request.params.name, request.params.arguments);
+    
+    const startTime = Date.now();
+    const results = await executeTool(toolName, request.params.arguments);
+    const duration = Date.now() - startTime;
+    
+    log(LogLevel.INFO, `Tool execution completed: ${toolName}`, { 
+      duration: `${duration}ms`
+    });
+    
     return {
       content: [{ type: "text", text: JSON.stringify(results, null, 2) }],
     };
-
-    
   } catch (error) {
     if (error instanceof z.ZodError) {
-      throw new Error(`Invalid input: ${JSON.stringify(error.errors)}`);
+      const errorMsg = `Invalid input: ${JSON.stringify(error.errors)}`;
+      log(LogLevel.ERROR, errorMsg);
+      throw new Error(errorMsg);
     }
     if (isJFrogError(error)) {
-      throw new Error(formatJFrogError(error));
+      const formattedError = formatJFrogError(error);
+      log(LogLevel.ERROR, `JFrog API error`, { error: formattedError });
+      throw new Error(formattedError);
     }
+    
+    log(LogLevel.ERROR, `Unexpected error handling request`, {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    });
+    
     throw error;
   }
 });
@@ -62,60 +109,202 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 // Check if SSE mode is enabled via environment variable
 const sseEnabled = process.env.TRANSPORT === 'sse';
 const port = parseInt(process.env.PORT || '8080', 10);
+const maxReconnectAttempts = parseInt(process.env.MAX_RECONNECT_ATTEMPTS || '5', 10);
+const reconnectDelay = parseInt(process.env.RECONNECT_DELAY_MS || '2000', 10);
 
 // Start server using appropriate transport
 async function runServer() {
   if (sseEnabled) {
+    log(LogLevel.INFO, `Starting server in SSE mode on port ${port}`);
+    
     // Setup Express app for SSE transport
     const app = express();
     
+    // Request logging middleware
+    app.use((req, res, next) => {
+      const start = Date.now();
+      
+      res.on('finish', () => {
+        const duration = Date.now() - start;
+        log(LogLevel.DEBUG, `${req.method} ${req.originalUrl} ${res.statusCode}`, {
+          duration: `${duration}ms`,
+          contentType: res.getHeader('content-type'),
+          userAgent: req.headers['user-agent']
+        });
+      });
+      
+      next();
+    });
+    
+    // Error handling middleware
+    app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+      log(LogLevel.ERROR, `Express error: ${err.message}`, { 
+        stack: err.stack,
+        path: req.path
+      });
+      
+      res.status(500).json({ 
+        error: 'Internal Server Error',
+        message: err.message
+      });
+    });
+    
     // Configure CORS
+    const corsOrigin = process.env.CORS_ORIGIN || '*';
+    log(LogLevel.INFO, `Configuring CORS with origin: ${corsOrigin}`);
+    
     app.use(cors({
-      origin: process.env.CORS_ORIGIN || '*',
+      origin: corsOrigin,
       methods: 'GET, POST, OPTIONS',
       allowedHeaders: 'Content-Type, Authorization, x-api-key'
     }));
     
-    let transport: SSEServerTransport | null = null;
+    // Health check endpoint
+    app.get('/health', (req, res) => {
+      res.status(200).json({ 
+        status: 'ok', 
+        version: VERSION,
+        transport: 'sse'
+      });
+    });
+    
+    // SSE connection management
+    let connections = new Map<string, { 
+      transport: SSEServerTransport, 
+      res: express.Response, 
+      connectedAt: Date 
+    }>();
     
     // Setup SSE endpoint
     app.get('/sse', (req, res) => {
-      console.error('SSE connection established');
+      const connectionId = req.query.connectionId?.toString() || `conn_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+      
+      log(LogLevel.INFO, `SSE connection established`, { 
+        connectionId,
+        userAgent: req.headers['user-agent'],
+        remoteAddress: req.ip
+      });
+      
+      // Set appropriate headers for SSE
       res.setHeader('Content-Type', 'text/event-stream');
-      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Cache-Control', 'no-cache, no-transform');
       res.setHeader('Connection', 'keep-alive');
+      res.setHeader('X-Accel-Buffering', 'no'); // Disable proxy buffering
       
-      transport = new SSEServerTransport('/messages', res);
-      server.connect(transport);
+      // Initialization event to confirm connection
+      res.write(`event: connection\ndata: {"connectionId":"${connectionId}"}\n\n`);
       
-      // Handle client disconnect
+      // Create transport instance
+      const transport = new SSEServerTransport('/messages', res);
+      
+      // Keep track of connection
+      connections.set(connectionId, { 
+        transport, 
+        res, 
+        connectedAt: new Date() 
+      });
+      
+      // Connect server to transport
+      server.connect(transport).catch(error => {
+        log(LogLevel.ERROR, `Failed to connect server to transport: ${error.message}`, {
+          connectionId,
+          stack: error.stack
+        });
+      });
+      
+      // Clean up on client disconnect
       req.on('close', () => {
-        console.error('SSE connection closed');
+        log(LogLevel.INFO, `SSE connection closed`, { connectionId });
+        
+        // Clean up
+        connections.delete(connectionId);
+        
+        // Log active connection count
+        log(LogLevel.DEBUG, `Active SSE connections: ${connections.size}`);
       });
     });
     
     // Setup messages endpoint for client-to-server communication
-    app.post('/messages', express.json(), (req, res) => {
-      if (transport) {
-        transport.handlePostMessage(req, res);
+    app.post('/messages', express.json({ limit: '1mb' }), (req, res) => {
+      const connectionId = req.query.connectionId?.toString();
+      
+      if (!connectionId) {
+        log(LogLevel.WARN, 'Message received without connectionId');
+        return res.status(400).json({ error: 'Missing connectionId parameter' });
+      }
+      
+      const connection = connections.get(connectionId);
+      
+      if (connection) {
+        log(LogLevel.DEBUG, `Message received for connection: ${connectionId}`);
+        connection.transport.handlePostMessage(req, res);
       } else {
-        res.status(503).json({ error: 'SSE connection not established' });
+        log(LogLevel.WARN, `Message received for unknown connection: ${connectionId}`);
+        res.status(404).json({ error: 'Connection not found. Establish SSE connection first.' });
       }
     });
     
-    // Start Express server
-    app.listen(port, () => {
-      console.error(`JFrog MCP Server running in SSE mode on port ${port}`);
+    // Periodically log connection statistics
+    setInterval(() => {
+      if (connections.size > 0) {
+        log(LogLevel.INFO, `Active SSE connections: ${connections.size}`);
+      }
+    }, 60000); // Every minute
+    
+    // Handle unexpected errors
+    process.on('uncaughtException', (error) => {
+      log(LogLevel.ERROR, `Uncaught exception: ${error.message}`, { stack: error.stack });
     });
+    
+    process.on('unhandledRejection', (reason) => {
+      log(LogLevel.ERROR, `Unhandled rejection: ${reason instanceof Error ? reason.message : String(reason)}`, {
+        stack: reason instanceof Error ? reason.stack : undefined
+      });
+    });
+    
+    // Start Express server with reconnection logic
+    let serverStarted = false;
+    let attempts = 0;
+    
+    const startExpressServer = () => {
+      app.listen(port, () => {
+        serverStarted = true;
+        log(LogLevel.INFO, `JFrog MCP Server running in SSE mode on port ${port}`);
+      }).on('error', (error) => {
+        log(LogLevel.ERROR, `Failed to start server: ${error.message}`);
+        
+        if (!serverStarted && attempts < maxReconnectAttempts) {
+          attempts++;
+          const delay = reconnectDelay * attempts;
+          log(LogLevel.WARN, `Retrying server start in ${delay}ms (attempt ${attempts}/${maxReconnectAttempts})`);
+          
+          setTimeout(startExpressServer, delay);
+        } else if (!serverStarted) {
+          log(LogLevel.ERROR, `Failed to start server after ${attempts} attempts, giving up`);
+          process.exit(1);
+        }
+      });
+    };
+    
+    startExpressServer();
   } else {
     // Fallback to stdio transport
-    const transport = new StdioServerTransport();
-    await server.connect(transport);
-    console.error("JFrog MCP Server running on stdio");
+    log(LogLevel.INFO, "Starting server in stdio mode");
+    
+    try {
+      const transport = new StdioServerTransport();
+      await server.connect(transport);
+      log(LogLevel.INFO, "JFrog MCP Server running on stdio");
+    } catch (error) {
+      log(LogLevel.ERROR, `Failed to start stdio server: ${error instanceof Error ? error.message : String(error)}`);
+      process.exit(1);
+    }
   }
 }
 
 runServer().catch((error) => {
-  console.error("Fatal error in main():", error);
+  log(LogLevel.ERROR, `Fatal error in main(): ${error instanceof Error ? error.message : String(error)}`, {
+    stack: error instanceof Error ? error.stack : undefined
+  });
   process.exit(1);
 });
