@@ -17,6 +17,13 @@ import { VERSION } from "./common/version.js";
 import express from "express";
 import cors from "cors";
 
+// Declare process type for TypeScript
+declare const process: {
+  env: Record<string, string | undefined>;
+  exit: (code: number) => void;
+  on: (event: string, listener: (...args: any[]) => void) => void;
+};
+
 // Configure logging levels
 enum LogLevel {
   DEBUG = 0,
@@ -168,6 +175,21 @@ async function runServer() {
       });
     });
     
+    // Connection info endpoint
+    app.get('/connections', (req, res) => {
+      const connectionsInfo = Array.from(connections.entries()).map(([id, conn]) => ({
+        id,
+        connectedAt: conn.connectedAt,
+        age: Date.now() - conn.connectedAt.getTime(),
+        userAgent: conn.res.req.headers['user-agent'] || 'unknown'
+      }));
+      
+      res.status(200).json({
+        total: connections.size,
+        connections: connectionsInfo
+      });
+    });
+    
     // SSE connection management
     let connections = new Map<string, { 
       transport: SSEServerTransport, 
@@ -184,15 +206,6 @@ async function runServer() {
         userAgent: req.headers['user-agent'],
         remoteAddress: req.ip
       });
-      
-      // Set appropriate headers for SSE
-      res.setHeader('Content-Type', 'text/event-stream');
-      res.setHeader('Cache-Control', 'no-cache, no-transform');
-      res.setHeader('Connection', 'keep-alive');
-      res.setHeader('X-Accel-Buffering', 'no'); // Disable proxy buffering
-      
-      // Initialization event to confirm connection
-      res.write(`event: connection\ndata: {"connectionId":"${connectionId}"}\n\n`);
       
       // Create transport instance
       const transport = new SSEServerTransport('/messages', res);
@@ -230,17 +243,42 @@ async function runServer() {
       
       if (!connectionId) {
         log(LogLevel.WARN, 'Message received without connectionId');
-        return res.status(400).json({ error: 'Missing connectionId parameter' });
+        return res.status(400).json({ 
+          error: 'Missing connectionId parameter', 
+          message: 'You must provide a connectionId query parameter matching your SSE connection'
+        });
       }
       
       const connection = connections.get(connectionId);
       
       if (connection) {
-        log(LogLevel.DEBUG, `Message received for connection: ${connectionId}`);
-        connection.transport.handlePostMessage(req, res);
+        log(LogLevel.DEBUG, `Message received for connection: ${connectionId}`, {
+          body: typeof req.body === 'object' ? JSON.stringify(req.body).substring(0, 100) : 'invalid'
+        });
+        
+        try {
+          connection.transport.handlePostMessage(req, res);
+        } catch (error) {
+          log(LogLevel.ERROR, `Error handling message: ${error instanceof Error ? error.message : String(error)}`, {
+            connectionId,
+            stack: error instanceof Error ? error.stack : undefined
+          });
+          
+          // If headers haven't been sent yet, send an error response
+          if (!res.headersSent) {
+            res.status(500).json({ 
+              error: 'Internal server error',
+              message: error instanceof Error ? error.message : String(error) 
+            });
+          }
+        }
       } else {
         log(LogLevel.WARN, `Message received for unknown connection: ${connectionId}`);
-        res.status(404).json({ error: 'Connection not found. Establish SSE connection first.' });
+        res.status(404).json({ 
+          error: 'Connection not found', 
+          message: 'Establish an SSE connection first with the same connectionId',
+          activeConnections: connections.size
+        });
       }
     });
     
