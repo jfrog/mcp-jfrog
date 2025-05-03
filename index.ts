@@ -286,14 +286,35 @@ async function runServer() {
           ?.split('=')[1];
       }
       
+      // Special mode for Cursor: if there's only one active connection, use that regardless of connectionId
+      const allConnections = Array.from(connections.entries());
+      const singleConnection = allConnections.length === 1 ? allConnections[0][1] : null;
+      
+      // Debug the connection state
+      log(LogLevel.DEBUG, `Processing message request`, { 
+        hasConnectionId: !!connectionId,
+        connectionCount: connections.size,
+        hasSingleConnection: !!singleConnection,
+        userAgent: req.headers['user-agent']
+      });
+      
+      if (!connectionId && singleConnection) {
+        // Use the single available connection
+        connectionId = allConnections[0][0]; // Use the ID of the single connection
+        log(LogLevel.INFO, `No connectionId provided, but only one active connection exists - using it`, { connectionId });
+      }
+      
       if (!connectionId) {
         log(LogLevel.WARN, 'Message received without connectionId', {
           headers: JSON.stringify(req.headers),
-          cookies: req.headers.cookie
+          cookies: req.headers.cookie,
+          activeConnections: connections.size
         });
         return res.status(400).json({ 
           error: 'Missing connectionId parameter', 
-          message: 'You must provide a connectionId query parameter or cookie matching your SSE connection'
+          message: 'You must provide a connectionId query parameter or cookie matching your SSE connection',
+          activeConnections: connections.size,
+          tip: 'If using Cursor, try restarting the client or refreshing the connection'
         });
       }
       
@@ -336,6 +357,65 @@ async function runServer() {
           error: 'Connection not found', 
           message: 'Establish an SSE connection first with the same connectionId',
           activeConnections: connections.size
+        });
+      }
+    });
+    
+    // Special endpoint for Cursor MCP client (compatible with url-based configuration)
+    app.post('/', express.json({ limit: '1mb' }), (req, res) => {
+      // Find the most recent connection, if any exist
+      let mostRecentConnection: { id: string; connection: any } | null = null;
+      
+      for (const [id, conn] of connections.entries()) {
+        if (!mostRecentConnection || conn.connectedAt > mostRecentConnection.connection.connectedAt) {
+          mostRecentConnection = { id, connection: conn };
+        }
+      }
+      
+      log(LogLevel.DEBUG, `Root POST request received`, {
+        hasConnection: !!mostRecentConnection,
+        connectionCount: connections.size,
+        userAgent: req.headers['user-agent']
+      });
+      
+      if (mostRecentConnection) {
+        log(LogLevel.INFO, `Using most recent connection for root POST request`, { 
+          connectionId: mostRecentConnection.id,
+          connectedAt: mostRecentConnection.connection.connectedAt
+        });
+        
+        try {
+          // Update last activity time
+          mostRecentConnection.connection.lastActivity = new Date();
+          
+          // Use the most recent connection's transport to handle the message
+          mostRecentConnection.connection.transport.handlePostMessage(req, res);
+          
+          // Increment message count
+          if (typeof mostRecentConnection.connection.transport.messageCount === 'number') {
+            mostRecentConnection.connection.transport.messageCount++;
+          } else {
+            mostRecentConnection.connection.transport.messageCount = 1;
+          }
+        } catch (error) {
+          log(LogLevel.ERROR, `Error handling root POST message: ${error instanceof Error ? error.message : String(error)}`, {
+            connectionId: mostRecentConnection.id,
+            stack: error instanceof Error ? error.stack : undefined
+          });
+          
+          // If headers haven't been sent yet, send an error response
+          if (!res.headersSent) {
+            res.status(500).json({ 
+              error: 'Internal server error',
+              message: error instanceof Error ? error.message : String(error) 
+            });
+          }
+        }
+      } else {
+        log(LogLevel.WARN, 'Root POST request received, but no active connections exist');
+        res.status(503).json({
+          error: 'No active connections',
+          message: 'No active SSE connections found. Establish an SSE connection first.'
         });
       }
     });
