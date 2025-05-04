@@ -19,6 +19,7 @@ This is an experimental project intended to demonstrate JFrog's capabilities wit
 - **Mission Control**: View associated JFrog Platform instances
 - **Artifact Search**: Execute powerful AQL queries to search for artifacts and builds
 - **Catalog and Curation**: Access package information, versions, vulnerabilities, and check curation status
+- **Xray**: Access scan artifacts summary, group by severity per artifact
 
 ## Tools
 
@@ -213,6 +214,16 @@ This is an experimental project intended to demonstrate JFrog's capabilities wit
       - `packageName` (string): The name of the package, as it appears in the package repository
       - `packageVersion` (string): The version of the package, as it appears in the package repository
     - Returns: Curation status (approved, blocked, or inconclusive)
+</details>
+
+<details>
+<summary><strong>Xray</strong></summary>
+
+22. `jfrog_get_artifacts_summary`
+    - Get artifacts issues summary in a repository or build, categorized and counted by severity (Low, Medium, High, Critical, Unkown)
+    - Inputs:
+      - `paths` (string array): An array of paths to the artifacts from which to create the summary from
+    - Returns: A summary based on vulnerability count per severity for each artifact in the provided array plus the total issues
 </details>
 
 ## Setup
