@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/jfrog-mcp-jfrog-badge.png)](https://mseep.ai/app/jfrog-mcp-jfrog)
+
 # JFrog MCP Server (🧪 Experimental)
 
 [![smithery badge](https://smithery.ai/badge/@jfrog/mcp-jfrog)](https://smithery.ai/server/@jfrog/mcp-jfrog)
