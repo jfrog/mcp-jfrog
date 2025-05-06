@@ -29,12 +29,16 @@
         "@types/node-fetch": "^2.6.12",
         "axios": "^1.8.3",
         "commander": "^11.1.0",
+        "cors": "^2.8.5",
+        "express": "^4.18.3",
         "node-fetch": "^3.3.2",
         "universal-user-agent": "^7.0.2",
         "zod": "^3.22.4",
         "zod-to-json-schema": "^3.23.5"
     },
     "devDependencies": {
+        "@types/cors": "^2.8.17",
+        "@types/express": "^4.17.21",
         "@types/jest": "^29.5.14",
         "@typescript-eslint/eslint-plugin": "^5.62.0",
         "@typescript-eslint/parser": "^5.62.0",

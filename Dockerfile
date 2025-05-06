@@ -21,4 +21,7 @@ WORKDIR /app
 
 RUN npm ci --ignore-scripts --omit-dev
 
+# Expose port for SSE transport mode
+EXPOSE 8080
+
 ENTRYPOINT ["node", "dist/index.js"]
