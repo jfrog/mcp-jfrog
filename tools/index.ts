@@ -18,7 +18,7 @@ export const tools =[
   ...AQLTools,
   ...CatalogTools,
   ...CurationTools,
-  ...PermissionsTools
+  ...PermissionsTools,
   ...ArtifactSecurityTools,
 ];
 
