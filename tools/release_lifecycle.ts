@@ -15,6 +15,15 @@ export async function createReleaseBundle(releaseBundle: CreateReleaseBundleOpti
      
   return release_lifecycleSchemas.JFrogReleaseBundleResponseSchema.parse(response);
 }
+
+export async function getReleaseBundle(rbv2_name: string, project = "default") {
+  const response = await jfrogRequest(`/lifecycle/api/v2/release_bundle/records/${rbv2_name}?project=${project}`, {
+    method: "GET",
+  });
+     
+  return release_lifecycleSchemas.JFrogReleaseBundleVersionSchema.parse(response);
+}
+
   type DistributeReleaseBundleOptions = z.infer<typeof release_lifecycleSchemas.DistributeReleaseBundleSchema>;
 export async function distributeReleaseBundle(options: DistributeReleaseBundleOptions) {
   const response = await jfrogRequest(`/lifecycle/api/v2/distribution/distribute/${options.name}/${options.version}?repository_key=${options.repository_key}`, {
@@ -62,6 +71,17 @@ const promoteReleaseBundleTool = {
   }
 };
 
+const getSpecificReleaseBundleTool = {
+  name: "jfrog_get_specific_release_bundle",
+  description: "Get a list of all version of a specific release bundle",
+  inputSchema: zodToJsonSchema(release_lifecycleSchemas.GetSpecificReleaseBundleSchema),
+  outputSchema: zodToJsonSchema(release_lifecycleSchemas.JFrogReleaseBundleVersionSchema),
+  handler: async (args: any) => {
+    const parsedArgs = release_lifecycleSchemas.GetSpecificReleaseBundleSchema.parse(args);
+    return await getReleaseBundle(parsedArgs.rbv2_name, parsedArgs.project);
+  }
+};
+
 const createReleaseBundleTool = {
   name: "jfrog_create_release_bundle",
   description: "create a release bundle in the jfrog platform",
@@ -88,5 +108,6 @@ const distributeReleaseBundleTool = {
 export const ReleaseLifecycleTools = [
   createReleaseBundleTool,
   promoteReleaseBundleTool,
-  distributeReleaseBundleTool
+  distributeReleaseBundleTool,
+  getSpecificReleaseBundleTool
 ];

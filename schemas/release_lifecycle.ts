@@ -27,6 +27,28 @@ export const JFrogReleaseBundleResponseSchema = z.object({
   created: z.string().describe("Timestamp when the Release Bundle was created (ISO 8601 format)")
 });
 
+export const JFrogReleaseBundleVersionItemSchema = z.object({
+  status: z.string().describe("Status of the release bundle version"),
+  repository_key: z.string().describe("Repository key where the Release Bundle is stored"),
+  release_bundle_name: z.string().describe("Name of the Release Bundle"),
+  release_bundle_version: z.string().describe("Version of the Release Bundle"),
+  service_id: z.string().describe("Service ID of the Artifactory instance"),
+  created_by: z.string().describe("Username of the creator"),
+  created: z.string().describe("Timestamp when the Release Bundle was created (ISO 8601 format)")
+});
+
+export const JFrogReleaseBundleVersionSchema = z.object({
+  release_bundles: z.array(JFrogReleaseBundleVersionItemSchema).describe("List of release bundle versions"),
+  total: z.number().describe("Total number of release bundle versions"),
+  limit: z.number().describe("Maximum number of items per page"),
+  offset: z.number().describe("Offset from the first result")
+});
+
+export const GetSpecificReleaseBundleSchema = z.object({
+  rbv2_name: z.string().describe("Name of the Release Bundle"),
+  project: z.string().optional().default("default").describe("Project key")
+});
+
 export const PromoteReleaseBundleSchema = z.object({
   name: z.string().describe("Name of the Release Bundle to promote"),
   version: z.string().describe("Version of the Release Bundle to promote"),
