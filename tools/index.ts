@@ -8,6 +8,7 @@ import { AQLTools } from "./aql.js";
 import { CatalogTools } from "./catalog.js";
 import { CurationTools } from "./curation.js";
 import { PermissionsTools } from "./permissions.js";
+import { ArtifactSecurityTools } from "./security.js";
 
 export const tools =[
   ...RepositoryTools,
@@ -18,6 +19,7 @@ export const tools =[
   ...CatalogTools,
   ...CurationTools,
   ...PermissionsTools
+  ...ArtifactSecurityTools,
 ];
 
 // A function that given a tool name, executes the handler with the arguments and returns the result
