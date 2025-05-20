@@ -7,6 +7,7 @@ import { MissionControlTools } from "./mission_control.js";
 import { AQLTools } from "./aql.js";
 import { CatalogTools } from "./catalog.js";
 import { CurationTools } from "./curation.js";
+import { PermissionsTools } from "./permissions.js";
 import { ArtifactSecurityTools } from "./security.js";
 
 export const tools =[
@@ -17,6 +18,7 @@ export const tools =[
   ...AQLTools,
   ...CatalogTools,
   ...CurationTools,
+  ...PermissionsTools
   ...ArtifactSecurityTools,
 ];
 

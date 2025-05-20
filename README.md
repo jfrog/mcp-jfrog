@@ -247,6 +247,12 @@ npx -y @smithery/cli install @jfrog/mcp-jfrog --client claude
 
 - `JFROG_ACCESS_TOKEN`: Your JFrog access token (required)
 - `JFROG_URL`: Base URL for your JFrog platform (required)
+- `TRANSPORT`: Transport mode to use, set to 'sse' to enable SSE transport (default: stdio)
+- `PORT`: Port number to use for SSE transport (default: 8080)
+- `CORS_ORIGIN`: CORS origin allowed for SSE connections (default: '*')
+- `LOG_LEVEL`: Logging level: DEBUG, INFO, WARN, ERROR (default: INFO)
+- `MAX_RECONNECT_ATTEMPTS`: Maximum number of reconnection attempts for SSE server (default: 5)
+- `RECONNECT_DELAY_MS`: Base delay in milliseconds between reconnection attempts (default: 2000)
 
 ### JFrog Token (`JFROG_ACCESS_TOKEN`)
 To use this MCP server, you need to create a JFrog Access Token or use an Idenetity token with appropriate permissions:
@@ -261,6 +267,39 @@ For information on how to create a JFrog Token, please refer to the JFrog offici
 
 Your JFrog platform instance URL (e.g. https://acme.jfrog.io)
 
+### SSE Transport Features
+
+The SSE transport mode includes the following features:
+
+- **Connection Management**: Each SSE connection is tracked with a unique ID, allowing clients to maintain state across reconnections.
+- **Structured Logging**: Detailed logs with timestamps, severity levels, and relevant contextual information.
+- **Connection Resilience**: Automatic reconnection attempts with exponential backoff if the server fails to start.
+- **Health Endpoint**: A `/health` endpoint that returns server status information.
+- **Connection Tracking**: Real-time tracking of active connections with periodic statistics logging.
+- **Performance Metrics**: Execution time tracking for tool operations and HTTP requests.
+
+When using SSE mode:
+
+1. Clients should connect to the `/sse` endpoint, optionally providing a `connectionId` query parameter for session tracking.
+2. Client requests should be sent to the `/messages` endpoint with the same `connectionId` as a query parameter.
+3. The server will respond with server-sent events through the established SSE connection.
+
+Example client connection with connection ID:
+```
+GET /sse?connectionId=client123
+```
+
+Example client request:
+```
+POST /messages?connectionId=client123
+Content-Type: application/json
+
+{
+  "jsonrpc": "2.0",
+  "method": "listTools",
+  "id": 1
+}
+```
 
 ### How to build
 
@@ -340,12 +379,57 @@ Add the following to your `~/.cursor/mcp.json`:
       ],
       "env": {
         "JFROG_ACCESS_TOKEN": "<YOUR_TOKEN>",
-        "JFROG_URL": "https://your-instance.jfrog.io" // Your JFrog platform URL
+        "JFROG_URL": "https://your-instance.jfrog.io"
+      },
+      "serverUrl": "http://localhost:8080/sse"
+    }
+  }
+}
+```
+
+### SSE Transport Mode
+
+To use the JFrog MCP Server with SSE transport mode (useful for web interfaces like Cursor's webview):
+
+```json
+{
+  "mcpServers": { 
+    "jfrog-sse": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-p",
+        "8080:8080",
+        "-e",
+        "TRANSPORT=sse",
+        "-e",
+        "PORT=8080",
+        "-e",
+        "CORS_ORIGIN=*",
+        "-e",
+        "LOG_LEVEL=INFO",
+        "-e",
+        "MAX_RECONNECT_ATTEMPTS=5",
+        "-e",
+        "RECONNECT_DELAY_MS=2000",
+        "-e",
+        "JFROG_ACCESS_TOKEN",
+        "-e",
+        "JFROG_URL",
+        "mcp/jfrog"
+      ],
+      "env": {
+        "JFROG_ACCESS_TOKEN": "<YOUR_TOKEN>",
+        "JFROG_URL": "https://your-instance.jfrog.io",
+        "serverUrl": "http://localhost:8080/sse"
       }
     }
   }
 }
 ```
+
+Note: For SSE mode, you need to add the `serverUrl` parameter pointing to your SSE endpoint, and expose the port used by the server (-p 8080:8080).
 </details>
 
 <details>
@@ -373,7 +457,8 @@ Add the following to your `claude_desktop_config.json`:
       "env": {
         "JFROG_ACCESS_TOKEN": "<YOUR_TOKEN>",
         "JFROG_URL": "https://your-instance.jfrog.io" // Your JFrog platform URL
-      }
+      },
+      "serverUrl": "http://localhost:8080/sse"
     }
   }
 }
@@ -398,6 +483,49 @@ Add the following to your `claude_desktop_config.json`:
     }
   }
 }
+```
+
+### SSE Transport Mode
+
+For Claude Desktop with SSE transport:
+
+```json
+{
+  "mcpServers": { 
+    "jfrog-sse": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-p",
+        "8080:8080",
+        "-e",
+        "TRANSPORT=sse",
+        "-e",
+        "PORT=8080",
+        "-e",
+        "CORS_ORIGIN=*",
+        "-e",
+        "LOG_LEVEL=INFO",
+        "-e",
+        "MAX_RECONNECT_ATTEMPTS=5",
+        "-e",
+        "RECONNECT_DELAY_MS=2000",
+        "-e",
+        "JFROG_ACCESS_TOKEN",
+        "-e",
+        "JFROG_URL",
+        "mcp/jfrog"
+      ],
+      "env": {
+        "JFROG_ACCESS_TOKEN": "<YOUR_TOKEN>",
+        "JFROG_URL": "https://your-instance.jfrog.io",
+        "serverUrl": "http://localhost:8080/sse"
+      }
+    }
+  }
+}
+```
 ```
 </details>
 
