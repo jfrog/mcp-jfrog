@@ -166,6 +166,7 @@ async function runServer() {
         message: err.message
       });
     });
+
     
     // Configure CORS
     const corsOrigin = process.env.CORS_ORIGIN || '*';
