@@ -239,7 +239,7 @@ npx -y @smithery/cli install @jfrog/mcp-jfrog --client claude
 ### Prerequisites
 
 - Node.js v18 or higher
-- Docker (if using Docker deployment, see )
+- Docker (if using Docker deployment, [See Docker Deployment](https://github.com/jfrog/mcp-jfrog/blob/main/README.md#docker) )
 - A valid JFrog platform instance with appropriate permissions
 - Access to create and manage access tokens in your JFrog platform instance
 
