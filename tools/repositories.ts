@@ -104,7 +104,7 @@ const checkJfrogAvailabilityTool = {
   name: "jfrog_check_availability",
   description: "Check if JFrog platform is ready and functioning or not",
   inputSchema: zodToJsonSchema(z.object({})),
-  outputSchema: zodToJsonSchema(JFrogPlatformReadinessSchema),
+  //outputSchema: zodToJsonSchema(JFrogPlatformReadinessSchema),
   handler: async () => {
     return await checkPlatformReadiness();
   }
@@ -114,7 +114,7 @@ const setFolderPropertyTool = {
   name: "jfrog_set_folder_property",
   description: "Set properties on a folder in Artifactory, with optional recursive application",
   inputSchema: zodToJsonSchema(SetFolderPropertySchema),
-  outputSchema: zodToJsonSchema(z.object({})),
+  //outputSchema: zodToJsonSchema(z.object({})),
   handler: async (args: any) => {
     const parsedArgs = SetFolderPropertySchema.parse(args);
     return await setFolderProperty(parsedArgs.folderPath, parsedArgs.properties, parsedArgs.recursive);
@@ -125,7 +125,7 @@ const createLocalRepositoryTool = {
   name: "jfrog_create_local_repository",
   description: "Create a new local repository in artifactroy",
   inputSchema: zodToJsonSchema(CreateLocalRepoSchema),
-  outputSchema: zodToJsonSchema(JFrogRepositoryCreateResponseSchema),
+  //outputSchema: zodToJsonSchema(JFrogRepositoryCreateResponseSchema),
   handler: async (args: any) => {
     const parsedArgs = CreateLocalRepoSchema.parse(args);
     return await createLocalRepository(parsedArgs);
@@ -136,7 +136,7 @@ const createRemoteRepositoryTool = {
   name: "jfrog_create_remote_repository",
   description: "Create a new remote repository in Artifactory to proxy external package registries",
   inputSchema: zodToJsonSchema(CreateRemoteRepoSchema),
-  outputSchema: zodToJsonSchema(JFrogRepositoryCreateResponseSchema),
+  //outputSchema: zodToJsonSchema(JFrogRepositoryCreateResponseSchema),
   handler: async (args: any) => {
     const parsedArgs = CreateRemoteRepoSchema.parse(args);
     return await createRemoteRepository(parsedArgs);
@@ -147,7 +147,7 @@ const createVirtualRepositoryTool = {
   name: "jfrog_create_virtual_repository",
   description: "Create a new virtual repository in Artifactory that aggregates multiple repositories",
   inputSchema: zodToJsonSchema(CreateVirtualRepoSchema),
-  outputSchema: zodToJsonSchema(JFrogRepositoryCreateResponseSchema),
+  //outputSchema: zodToJsonSchema(JFrogRepositoryCreateResponseSchema),
   handler: async (args: any) => {
     const parsedArgs = CreateVirtualRepoSchema.parse(args);
     return await createVirtualRepository(parsedArgs);
@@ -158,7 +158,7 @@ const listRepositoriesTool = {
   name: "jfrog_list_repositories",
   description: "List all repositories in Artifactory with optional filtering by type, package type, and project",
   inputSchema: zodToJsonSchema(ListRepositoriesParamsSchema),
-  outputSchema: zodToJsonSchema(ListRepositoriesResponseSchema),
+  //outputSchema: zodToJsonSchema(ListRepositoriesResponseSchema),
   handler: async (args: any) => {
     const parsedArgs = ListRepositoriesParamsSchema.parse(args);
     return await listRepositories(parsedArgs);

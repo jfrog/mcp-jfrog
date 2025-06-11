@@ -72,7 +72,7 @@ const executeAQLQueryTool = {
   name: "jfrog_execute_aql_query",
   description: "Execute an Artifactory Query Language (AQL) query to search for artifacts, builds, or other entities in JFrog Artifactory. AQL is a powerful query language for searching and filtering artifacts in Artifactory repositories. It supports complex criteria, sorting, pagination, and more.",
   inputSchema: zodToJsonSchema(aqlSchemas.AQLSearchSchema),
-  outputSchema: zodToJsonSchema(aqlSchemas.AQLSearchResponseSchema),
+  //outputSchema: zodToJsonSchema(aqlSchemas.AQLSearchResponseSchema),
   handler: async (args: any) => {
 
     const parsedArgs = aqlSchemas.AQLSearchSchema.parse(args);

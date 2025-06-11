@@ -26,7 +26,7 @@ const getAllJPDInstancesTool = {
   name: "jfrog_list_associated_instances",
   description: "get all JFrog Platform Deployment (JPD) instances associated with the current JFrog Platform",
   inputSchema: zodToJsonSchema(z.object({})),
-  outputSchema: zodToJsonSchema(mission_controlSchemas.JFrogJPDInstancesResponseSchema),
+  //outputSchema: zodToJsonSchema(mission_controlSchemas.JFrogJPDInstancesResponseSchema),
   handler: async (args: any) => {
     return await getAllJPDInstances();
   }

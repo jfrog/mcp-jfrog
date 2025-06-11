@@ -64,7 +64,7 @@ const promoteReleaseBundleTool = {
   name: "jfrog_promote_release_bundle",
   description: "Promote a release bundle version by copying or moving its contents",
   inputSchema: zodToJsonSchema(release_lifecycleSchemas.PromoteReleaseBundleSchema),
-  outputSchema: zodToJsonSchema(release_lifecycleSchemas.JFrogReleaseBundleResponseSchema),
+  //outputSchema: zodToJsonSchema(release_lifecycleSchemas.JFrogReleaseBundleResponseSchema),
   handler: async (args: any) => {
     const parsedArgs = release_lifecycleSchemas.PromoteReleaseBundleSchema.parse(args);
     return await promoteReleaseBundle(parsedArgs);
@@ -75,7 +75,7 @@ const getSpecificReleaseBundleTool = {
   name: "jfrog_get_specific_release_bundle",
   description: "Get a list of all version of a specific release bundle",
   inputSchema: zodToJsonSchema(release_lifecycleSchemas.GetSpecificReleaseBundleSchema),
-  outputSchema: zodToJsonSchema(release_lifecycleSchemas.JFrogReleaseBundleVersionSchema),
+  //outputSchema: zodToJsonSchema(release_lifecycleSchemas.JFrogReleaseBundleVersionSchema),
   handler: async (args: any) => {
     const parsedArgs = release_lifecycleSchemas.GetSpecificReleaseBundleSchema.parse(args);
     return await getReleaseBundle(parsedArgs.rbv2_name, parsedArgs.project);
@@ -86,7 +86,7 @@ const createReleaseBundleTool = {
   name: "jfrog_create_release_bundle",
   description: "create a release bundle in the jfrog platform",
   inputSchema: zodToJsonSchema(release_lifecycleSchemas.CreateReleaseBundleSchema),
-  // outputSchema: zodToJsonSchema(release_lifecycleSchemas.CreateReleaseBundleResponseSchema),
+  // //outputSchema: zodToJsonSchema(release_lifecycleSchemas.CreateReleaseBundleResponseSchema),
   handler: async (args: any) => {
     const parsedArgs = release_lifecycleSchemas.CreateReleaseBundleSchema.parse(args);
     return await createReleaseBundle(parsedArgs);
@@ -97,7 +97,7 @@ const distributeReleaseBundleTool = {
   name: "jfrog_distribute_release_bundle",
   description: "Distribute a release bundle to a target environment",
   inputSchema: zodToJsonSchema(release_lifecycleSchemas.DistributeReleaseBundleSchema),
-  // outputSchema: zodToJsonSchema(release_lifecycleSchemas.DistributeReleaseBundleResponseSchema),
+  // //outputSchema: zodToJsonSchema(release_lifecycleSchemas.DistributeReleaseBundleResponseSchema),
   handler: async (args: any) => {
     const parsedArgs = release_lifecycleSchemas.DistributeReleaseBundleSchema.parse(args);
     return await distributeReleaseBundle(parsedArgs);

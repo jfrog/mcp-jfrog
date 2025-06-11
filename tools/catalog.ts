@@ -353,7 +353,7 @@ const getCatalogPackageEntityTool = {
         "this software is distributed under, along with urls of its version control system, " +
         "its homepage and whether it is known to be a malicious package (in any version).",
   inputSchema: zodToJsonSchema(JFrogCatalogPackageVersionSchema),
-  outputSchema: zodToJsonSchema(JFrogCatalogPackageVersionSchema),
+  //outputSchema: zodToJsonSchema(JFrogCatalogPackageVersionSchema),
   handler: async (args: any) => {
     const parsedArgs = JFrogCatalogPackageVersionSchema.parse(args);
     return await getPackageInfo(parsedArgs);
@@ -365,7 +365,7 @@ const getCatalogPackageVersionsTool = {
   description: "Useful for when you need to get a list of versions of a publicly available package. " +
         "it can tell you each version's publication date. Can also filter based on version vulnerability status.",
   inputSchema: zodToJsonSchema(JFrogCatalogPackageSchema),
-  outputSchema: zodToJsonSchema(JFrogCatalogPackageVersionResponseSchema),
+  //outputSchema: zodToJsonSchema(JFrogCatalogPackageVersionResponseSchema),
   handler: async (args: any) => {
     const parsedArgs = JFrogCatalogPackageSchema.parse(args);
     return await getPackageVersions(parsedArgs);
@@ -376,7 +376,7 @@ const getCatalogPackageVersionVulnerabilitiesTool = {
   name: "jfrog_get_package_version_vulnerabilities",
   description: "Useful for when you need the list of known vulnerabilities affecting a specific version of an open source package.",
   inputSchema: zodToJsonSchema(JFrogCatalogPackageVersionVulnerabilitiesSchema),
-  outputSchema: zodToJsonSchema(JFrogCatalogVulnerabilityResponseSchema),
+  //outputSchema: zodToJsonSchema(JFrogCatalogVulnerabilityResponseSchema),
   handler: async (args: any) => {
     const parsedArgs = JFrogCatalogPackageVersionVulnerabilitiesSchema.parse(args);
     return await getPackageVersionVulnerabilities(parsedArgs);
@@ -387,7 +387,7 @@ const getCatalogVulnerabilityInfoTool = {
   name: "jfrog_get_vulnerability_info",
   description: "Useful for when you need to get a specific vulnerability information, including its affected packages and versions.",
   inputSchema: zodToJsonSchema(JFrogCatalogVulnerabilityQuerySchema),
-  outputSchema: zodToJsonSchema(JFrogCatalogVulnerabilityResponseSchema),
+  //outputSchema: zodToJsonSchema(JFrogCatalogVulnerabilityResponseSchema),
   handler: async (args: any) => {
     const parsedArgs = JFrogCatalogVulnerabilityQuerySchema.parse(args);
     return await getVulnerabilityInfo(parsedArgs);

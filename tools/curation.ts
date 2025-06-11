@@ -52,7 +52,7 @@ const getCurationPackageStatusTool = {
   name: "jfrog_get_package_curation_status",
   description: "Useful for checking the curation status of a specific package version. Returns one of the following statuses: approved, blocked, inconclusive.",
   inputSchema: zodToJsonSchema(GetCurationPackageStatusInputSchema),
-  outputSchema: zodToJsonSchema(GetCurationPackageStatusOutputSchema),
+  //outputSchema: zodToJsonSchema(GetCurationPackageStatusOutputSchema),
   handler: async (args: any) => {
     const parsedArgs = GetCurationPackageStatusInputSchema.parse(args);
     return await getCurationPackageStatus(parsedArgs);

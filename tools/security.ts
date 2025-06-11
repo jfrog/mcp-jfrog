@@ -84,7 +84,7 @@ const getArtifactsSummaryTool = {
   name: "jfrog_get_artifacts_summary",
   description: "Get the summary of artifacts, one or many",
   inputSchema: zodToJsonSchema(GetArtifactsSummaryInputSchema),
-  outputSchema: zodToJsonSchema(ArtifactsSummarySchema),
+  //outputSchema: zodToJsonSchema(ArtifactsSummarySchema),
   handler: async (args: any) => {
     const parsedArgs = GetArtifactsSummaryInputSchema.parse(args);
     return await getArtifactSummary(parsedArgs);

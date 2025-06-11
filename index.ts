@@ -26,7 +26,9 @@ declare const process: {
 };
 
 // Add NodeJS.Timeout declaration
+// eslint-disable-next-line @typescript-eslint/no-empty-interface, @typescript-eslint/no-namespace
 declare namespace NodeJS {
+  // eslint-disable-next-line @typescript-eslint/no-empty-interface, @typescript-eslint/no-namespace
   interface Timeout {}
 }
 
@@ -53,7 +55,7 @@ function log(level: LogLevel, message: string, meta?: any) {
   if (level >= LOG_LEVEL) {
     const timestamp = new Date().toISOString();
     const levelName = LogLevel[level];
-    const metaStr = meta ? ` ${JSON.stringify(meta)}` : '';
+    const metaStr = meta ? ` ${JSON.stringify(meta)}` : "";
     console.error(`[${timestamp}] [${levelName}] ${message}${metaStr}`);
   }
 }
@@ -76,6 +78,7 @@ log(LogLevel.INFO, `Registering ${JFrogTools.length} tools`);
 
 server.setRequestHandler(ListToolsRequestSchema, async () => {
   log(LogLevel.DEBUG, "Handling ListToolsRequest");
+  log(LogLevel.INFO, `Registering tools: ${JFrogTools.map(tool => tool.name).join(", ")}`);
   return {
     tools: JFrogTools
   };
@@ -85,11 +88,17 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   try {
     const toolName = request.params.name;
     log(LogLevel.DEBUG, `Handling CallToolRequest for tool: ${toolName}`, { 
-      arguments: request.params.arguments ? JSON.stringify(request.params.arguments).substring(0, 100) + '...' : 'none'
+      arguments: request.params.arguments ? JSON.stringify(request.params.arguments).substring(0, 100) + "..." : "none"
     });
     
     if (!request.params.arguments) {
-      throw new Error("Arguments are required");
+      // Return a proper MCP error response instead of throwing
+      return {
+        error: {
+          code: -32602, // Invalid params
+          message: "Arguments are required"
+        }
+      };
     }
     
     const startTime = Date.now();
@@ -107,12 +116,24 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     if (error instanceof z.ZodError) {
       const errorMsg = `Invalid input: ${JSON.stringify(error.errors)}`;
       log(LogLevel.ERROR, errorMsg);
-      throw new Error(errorMsg);
+      // Return a proper MCP error response
+      return {
+        error: {
+          code: -32602, // Invalid params
+          message: errorMsg
+        }
+      };
     }
     if (isJFrogError(error)) {
       const formattedError = formatJFrogError(error);
       log(LogLevel.ERROR, `JFrog API error`, { error: formattedError });
-      throw new Error(formattedError);
+      // Return a proper MCP error response
+      return {
+        error: {
+          code: -32603, // Internal error
+          message: formattedError
+        }
+      };
     }
     
     log(LogLevel.ERROR, `Unexpected error handling request`, {
@@ -120,15 +141,21 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       stack: error instanceof Error ? error.stack : undefined
     });
     
-    throw error;
+    // Return a proper MCP error response for unexpected errors
+    return {
+      error: {
+        code: -32603, // Internal error
+        message: error instanceof Error ? error.message : String(error)
+      }
+    };
   }
 });
 
 // Check if SSE mode is enabled via environment variable
-const sseEnabled = process.env.TRANSPORT === 'sse';
-const port = parseInt(process.env.PORT || '8080', 10);
-const maxReconnectAttempts = parseInt(process.env.MAX_RECONNECT_ATTEMPTS || '5', 10);
-const reconnectDelay = parseInt(process.env.RECONNECT_DELAY_MS || '2000', 10);
+const sseEnabled = process.env.TRANSPORT === "sse";
+const port = parseInt(process.env.PORT || "8080", 10);
+const maxReconnectAttempts = parseInt(process.env.MAX_RECONNECT_ATTEMPTS || "5", 10);
+const reconnectDelay = parseInt(process.env.RECONNECT_DELAY_MS || "2000", 10);
 
 // Start server using appropriate transport
 async function runServer() {
@@ -142,12 +169,12 @@ async function runServer() {
     app.use((req, res, next) => {
       const start = Date.now();
       
-      res.on('finish', () => {
+      res.on("finish", () => {
         const duration = Date.now() - start;
         log(LogLevel.DEBUG, `${req.method} ${req.originalUrl} ${res.statusCode}`, {
           duration: `${duration}ms`,
-          contentType: res.getHeader('content-type'),
-          userAgent: req.headers['user-agent']
+          contentType: res.getHeader("content-type"),
+          userAgent: req.headers["user-agent"]
         });
       });
       
@@ -162,39 +189,39 @@ async function runServer() {
       });
       
       res.status(500).json({ 
-        error: 'Internal Server Error',
+        error: "Internal Server Error",
         message: err.message
       });
     });
     
     // Configure CORS
-    const corsOrigin = process.env.CORS_ORIGIN || '*';
+    const corsOrigin = process.env.CORS_ORIGIN || "*";
     log(LogLevel.INFO, `Configuring CORS with origin: ${corsOrigin}`);
     
     app.use(cors({
       origin: corsOrigin,
-      methods: 'GET, POST, OPTIONS',
-      allowedHeaders: 'Content-Type, Authorization, x-api-key'
+      methods: "GET, POST, OPTIONS",
+      allowedHeaders: "Content-Type, Authorization, x-api-key"
     }));
     
     // Health check endpoint
-    app.get('/health', (req, res) => {
+    app.get("/health", (req, res) => {
       res.status(200).json({ 
-        status: 'ok', 
+        status: "ok", 
         version: VERSION,
-        transport: 'sse'
+        transport: "sse"
       });
     });
     
     // Connection info endpoint
-    app.get('/connections', (req, res) => {
+    app.get("/connections", (req, res) => {
       const connectionsInfo = Array.from(connections.entries()).map(([id, conn]) => ({
         id,
         connectedAt: conn.connectedAt,
         age: Date.now() - conn.connectedAt.getTime(),
-        userAgent: conn.res.req.headers['user-agent'] || 'unknown',
+        userAgent: conn.res.req.headers["user-agent"] || "unknown",
         isCursorClient: conn.isCursorClient,
-        remoteAddress: conn.res.req.ip || conn.res.req.connection?.remoteAddress || 'unknown',
+        remoteAddress: conn.res.req.ip || conn.res.req.connection?.remoteAddress || "unknown",
         messagesSent: conn.transport.messageCount || 0,
         lastActivity: conn.lastActivity || conn.connectedAt,
         hasKeepAlive: !!conn.keepAliveInterval
@@ -209,7 +236,7 @@ async function runServer() {
     });
     
     // SSE connection management
-    let connections = new Map<string, { 
+    const connections = new Map<string, { 
       transport: ExtendedSSEServerTransport, 
       res: express.Response, 
       connectedAt: Date,
@@ -219,31 +246,31 @@ async function runServer() {
     }>();
     
     // Setup SSE endpoint
-    app.get('/sse', (req, res) => {
+    app.get("/sse", (req, res) => {
       // Extract connectionId from query params, cookies, or generate a new one
       const connectionIdFromQuery = req.query.connectionId?.toString();
-      const connectionIdFromCookie = req.headers.cookie?.split(';')
+      const connectionIdFromCookie = req.headers.cookie?.split(";")
         .map(cookie => cookie.trim())
-        .find(cookie => cookie.startsWith('connectionId='))
-        ?.split('=')[1];
+        .find(cookie => cookie.startsWith("connectionId="))
+        ?.split("=")[1];
       
       const connectionId = connectionIdFromQuery || connectionIdFromCookie || `conn_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
       
       // Set a cookie for clients that don't provide connectionId
       if (!connectionIdFromQuery && !connectionIdFromCookie) {
-        res.setHeader('Set-Cookie', `connectionId=${connectionId}; Path=/; SameSite=Strict`);
+        res.setHeader("Set-Cookie", `connectionId=${connectionId}; Path=/; SameSite=Strict`);
       }
       
       // Detect if this is a Cursor MCP client
-      const userAgent = req.headers['user-agent'] || '';
-      const isCursorClient = userAgent.includes('Cursor') || userAgent.includes('VSCode');
+      const userAgent = req.headers["user-agent"] || "";
+      const isCursorClient = userAgent.includes("Cursor") || userAgent.includes("VSCode");
       
       // Set proper headers for SSE (in case SDK transport doesn't set them)
-      res.setHeader('X-Accel-Buffering', 'no'); // Important for nginx proxies
+      res.setHeader("X-Accel-Buffering", "no"); // Important for nginx proxies
       
       log(LogLevel.INFO, `SSE connection established`, { 
         connectionId,
-        userAgent: req.headers['user-agent'],
+        userAgent: req.headers["user-agent"],
         remoteAddress: req.ip,
         fromQuery: !!connectionIdFromQuery,
         fromCookie: !!connectionIdFromCookie,
@@ -251,7 +278,7 @@ async function runServer() {
       });
       
       // Create transport instance
-      const transport = new SSEServerTransport('/messages', res) as ExtendedSSEServerTransport;
+      const transport = new SSEServerTransport("/messages", res) as ExtendedSSEServerTransport;
       transport.messageCount = 0;
       
       // Send a comment to keep the connection alive
@@ -288,7 +315,7 @@ async function runServer() {
       });
       
       // Clean up on client disconnect
-      req.on('close', () => {
+      req.on("close", () => {
         log(LogLevel.INFO, `SSE connection closed`, { connectionId });
         
         // Clear the keepalive interval
@@ -303,16 +330,16 @@ async function runServer() {
     });
     
     // Setup messages endpoint for client-to-server communication
-    app.post('/messages', express.json({ limit: '1mb' }), (req, res) => {
+    app.post("/messages", express.json({ limit: "1mb" }), (req, res) => {
       // Try to get connectionId from query params first, then from cookies
       let connectionId = req.query.connectionId?.toString();
       
       // If not in query, try to get it from cookies
       if (!connectionId) {
-        connectionId = req.headers.cookie?.split(';')
+        connectionId = req.headers.cookie?.split(";")
           .map(cookie => cookie.trim())
-          .find(cookie => cookie.startsWith('connectionId='))
-          ?.split('=')[1];
+          .find(cookie => cookie.startsWith("connectionId="))
+          ?.split("=")[1];
       }
       
       // Special mode for Cursor: if there's only one active connection, use that regardless of connectionId
@@ -324,7 +351,7 @@ async function runServer() {
         hasConnectionId: !!connectionId,
         connectionCount: connections.size,
         hasSingleConnection: !!singleConnection,
-        userAgent: req.headers['user-agent']
+        userAgent: req.headers["user-agent"]
       });
       
       if (!connectionId && singleConnection) {
@@ -334,16 +361,16 @@ async function runServer() {
       }
       
       if (!connectionId) {
-        log(LogLevel.WARN, 'Message received without connectionId', {
+        log(LogLevel.WARN, "Message received without connectionId", {
           headers: JSON.stringify(req.headers),
           cookies: req.headers.cookie,
           activeConnections: connections.size
         });
         return res.status(400).json({ 
-          error: 'Missing connectionId parameter', 
-          message: 'You must provide a connectionId query parameter or cookie matching your SSE connection',
+          error: "Missing connectionId parameter", 
+          message: "You must provide a connectionId query parameter or cookie matching your SSE connection",
           activeConnections: connections.size,
-          tip: 'If using Cursor, try restarting the client or refreshing the connection'
+          tip: "If using Cursor, try restarting the client or refreshing the connection"
         });
       }
       
@@ -351,7 +378,7 @@ async function runServer() {
       
       if (connection) {
         log(LogLevel.DEBUG, `Message received for connection: ${connectionId}`, {
-          body: typeof req.body === 'object' ? JSON.stringify(req.body).substring(0, 100) : 'invalid'
+          body: typeof req.body === "object" ? JSON.stringify(req.body).substring(0, 100) : "invalid"
         });
         
         // Update last activity time
@@ -364,9 +391,9 @@ async function runServer() {
           // Direct forwarding of the request to avoid any potential stream handling issues
           const transport = connection.transport;
           
-          if (typeof requestBody.jsonrpc === 'string') {
+          if (typeof requestBody.jsonrpc === "string") {
             // Use a more direct approach to handle the message
-            if (typeof transport.onmessage === 'function') {
+            if (typeof transport.onmessage === "function") {
               // Forward the JSON-RPC message directly to the transport's message handler
               const requestId = requestBody.id;
               transport.onmessage({ 
@@ -392,7 +419,7 @@ async function runServer() {
           }
           
           // Increment message count if property exists
-          if (typeof connection.transport.messageCount === 'number') {
+          if (typeof connection.transport.messageCount === "number") {
             connection.transport.messageCount++;
           } else {
             connection.transport.messageCount = 1;
@@ -406,7 +433,7 @@ async function runServer() {
           // If headers haven't been sent yet, send an error response
           if (!res.headersSent) {
             res.status(500).json({ 
-              error: 'Internal server error',
+              error: "Internal server error",
               message: error instanceof Error ? error.message : String(error) 
             });
           }
@@ -414,15 +441,15 @@ async function runServer() {
       } else {
         log(LogLevel.WARN, `Message received for unknown connection: ${connectionId}`);
         res.status(404).json({ 
-          error: 'Connection not found', 
-          message: 'Establish an SSE connection first with the same connectionId',
+          error: "Connection not found", 
+          message: "Establish an SSE connection first with the same connectionId",
           activeConnections: connections.size
         });
       }
     });
     
     // Special endpoint for Cursor MCP client (compatible with url-based configuration)
-    app.post('/', express.json({ limit: '1mb' }), (req, res) => {
+    app.post("/", express.json({ limit: "1mb" }), (req, res) => {
       // Find the most recent connection, if any exist
       let mostRecentConnection: { id: string; connection: any } | null = null;
       
@@ -435,8 +462,8 @@ async function runServer() {
       log(LogLevel.DEBUG, `Root POST request received`, {
         hasConnection: !!mostRecentConnection,
         connectionCount: connections.size,
-        userAgent: req.headers['user-agent'],
-        body: typeof req.body === 'object' ? JSON.stringify(req.body).substring(0, 100) : 'invalid'
+        userAgent: req.headers["user-agent"],
+        body: typeof req.body === "object" ? JSON.stringify(req.body).substring(0, 100) : "invalid"
       });
       
       if (mostRecentConnection) {
@@ -455,12 +482,12 @@ async function runServer() {
           // Direct forwarding of the request to avoid any potential stream handling issues
           const transport = mostRecentConnection.connection.transport;
           
-          if (typeof requestBody.jsonrpc !== 'string') {
-            throw new Error('Invalid JSON-RPC request');
+          if (typeof requestBody.jsonrpc !== "string") {
+            throw new Error("Invalid JSON-RPC request");
           }
           
           // Use a more direct approach to handle the message
-          if (typeof transport.onmessage === 'function') {
+          if (typeof transport.onmessage === "function") {
             // Forward the JSON-RPC message directly to the transport's message handler
             const requestId = requestBody.id;
             transport.onmessage({ 
@@ -482,7 +509,7 @@ async function runServer() {
           }
           
           // Increment message count
-          if (typeof mostRecentConnection.connection.transport.messageCount === 'number') {
+          if (typeof mostRecentConnection.connection.transport.messageCount === "number") {
             mostRecentConnection.connection.transport.messageCount++;
           } else {
             mostRecentConnection.connection.transport.messageCount = 1;
@@ -496,16 +523,16 @@ async function runServer() {
           // If headers haven't been sent yet, send an error response
           if (!res.headersSent) {
             res.status(500).json({ 
-              error: 'Internal server error',
+              error: "Internal server error",
               message: error instanceof Error ? error.message : String(error) 
             });
           }
         }
       } else {
-        log(LogLevel.WARN, 'Root POST request received, but no active connections exist');
+        log(LogLevel.WARN, "Root POST request received, but no active connections exist");
         res.status(503).json({
-          error: 'No active connections',
-          message: 'No active SSE connections found. Establish an SSE connection first.'
+          error: "No active connections",
+          message: "No active SSE connections found. Establish an SSE connection first."
         });
       }
     });
@@ -518,11 +545,11 @@ async function runServer() {
     }, 60000); // Every minute
     
     // Handle unexpected errors
-    process.on('uncaughtException', (error) => {
+    process.on("uncaughtException", (error) => {
       log(LogLevel.ERROR, `Uncaught exception: ${error.message}`, { stack: error.stack });
     });
     
-    process.on('unhandledRejection', (reason) => {
+    process.on("unhandledRejection", (reason) => {
       log(LogLevel.ERROR, `Unhandled rejection: ${reason instanceof Error ? reason.message : String(reason)}`, {
         stack: reason instanceof Error ? reason.stack : undefined
       });
@@ -536,7 +563,7 @@ async function runServer() {
       app.listen(port, () => {
         serverStarted = true;
         log(LogLevel.INFO, `JFrog MCP Server running in SSE mode on port ${port}`);
-      }).on('error', (error) => {
+      }).on("error", (error) => {
         log(LogLevel.ERROR, `Failed to start server: ${error.message}`);
         
         if (!serverStarted && attempts < maxReconnectAttempts) {

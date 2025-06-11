@@ -10,21 +10,21 @@ const ResourceTargetSchema = z.object({
 
 const ResourceActionsSchema = z.object({
   users: z.record(z.array(z.enum([
-    'READ',
-    'WRITE',
-    'ANNOTATE',
-    'DELETE',
-    'DISTRIBUTE',
-    'MANAGE'
+    "READ",
+    "WRITE",
+    "ANNOTATE",
+    "DELETE",
+    "DISTRIBUTE",
+    "MANAGE"
   ]))),
   groups: z.record(z.array(z.enum([
-    'READ',
-    'WRITE',
-    'ANNOTATE',
-    'DELETE',
-    'DISTRIBUTE',
-    'MANAGE'
-  ]))).optional()
+    "READ",
+    "WRITE",
+    "ANNOTATE",
+    "DELETE",
+    "DISTRIBUTE",
+    "MANAGE"
+  ]))).default({}).describe("The actions that the group can perform on the resource")
 });
 
 const ArtifactResourceSchema = z.object({
@@ -64,10 +64,10 @@ const PermissionListSchema = z.object({
 // API Functions
 export async function getAllPermissionTargets(cursor?: string, limit?: number) {
   const params = new URLSearchParams();
-  if (cursor) params.append('cursor', cursor);
-  if (limit) params.append('limit', limit.toString());
+  if (cursor) params.append("cursor", cursor);
+  if (limit) params.append("limit", limit.toString());
   
-  const response = await jfrogRequest(`/access/api/v2/permissions${params.toString() ? `?${params.toString()}` : ''}`, {
+  const response = await jfrogRequest(`/access/api/v2/permissions${params.toString() ? `?${params.toString()}` : ""}`, {
     method: "GET",
   });
   return PermissionListSchema.parse(response);
@@ -104,23 +104,23 @@ export async function deletePermissionTarget(name: string) {
 }
 
 // Resource type specific operations
-export async function getPermissionResource(name: string, resourceType: 'artifact' | 'release_bundle' | 'build') {
+export async function getPermissionResource(name: string, resourceType: "artifact" | "release_bundle" | "build") {
   const response = await jfrogRequest(`/access/api/v2/permissions/${name}/${resourceType}`, {
     method: "GET",
   });
   switch (resourceType) {
-    case 'artifact':
-      return ArtifactResourceSchema.parse(response);
-    case 'release_bundle':
-      return ReleaseBundleResourceSchema.parse(response);
-    case 'build':
-      return BuildResourceSchema.parse(response);
+  case "artifact":
+    return ArtifactResourceSchema.parse(response);
+  case "release_bundle":
+    return ReleaseBundleResourceSchema.parse(response);
+  case "build":
+    return BuildResourceSchema.parse(response);
   }
 }
 
 export async function updatePermissionResource(
   name: string, 
-  resourceType: 'artifact' | 'release_bundle' | 'build',
+  resourceType: "artifact" | "release_bundle" | "build",
   resource: z.infer<typeof ArtifactResourceSchema> | z.infer<typeof ReleaseBundleResourceSchema> | z.infer<typeof BuildResourceSchema>
 ) {
   const response = await jfrogRequest(`/access/api/v2/permissions/${name}/${resourceType}`, {
@@ -128,18 +128,18 @@ export async function updatePermissionResource(
     body: resource
   });
   switch (resourceType) {
-    case 'artifact':
-      return ArtifactResourceSchema.parse(response);
-    case 'release_bundle':
-      return ReleaseBundleResourceSchema.parse(response);
-    case 'build':
-      return BuildResourceSchema.parse(response);
+  case "artifact":
+    return ArtifactResourceSchema.parse(response);
+  case "release_bundle":
+    return ReleaseBundleResourceSchema.parse(response);
+  case "build":
+    return BuildResourceSchema.parse(response);
   }
 }
 
 export async function replacePermissionResource(
   name: string, 
-  resourceType: 'artifact' | 'release_bundle' | 'build',
+  resourceType: "artifact" | "release_bundle" | "build",
   resource: z.infer<typeof ArtifactResourceSchema> | z.infer<typeof ReleaseBundleResourceSchema> | z.infer<typeof BuildResourceSchema>
 ) {
   const response = await jfrogRequest(`/access/api/v2/permissions/${name}/${resourceType}`, {
@@ -147,16 +147,16 @@ export async function replacePermissionResource(
     body: resource
   });
   switch (resourceType) {
-    case 'artifact':
-      return ArtifactResourceSchema.parse(response);
-    case 'release_bundle':
-      return ReleaseBundleResourceSchema.parse(response);
-    case 'build':
-      return BuildResourceSchema.parse(response);
+  case "artifact":
+    return ArtifactResourceSchema.parse(response);
+  case "release_bundle":
+    return ReleaseBundleResourceSchema.parse(response);
+  case "build":
+    return BuildResourceSchema.parse(response);
   }
 }
 
-export async function deletePermissionResource(name: string, resourceType: 'artifact' | 'release_bundle' | 'build') {
+export async function deletePermissionResource(name: string, resourceType: "artifact" | "release_bundle" | "build") {
   await jfrogRequest(`/access/api/v2/permissions/${name}/${resourceType}`, {
     method: "DELETE",
   });
@@ -172,7 +172,7 @@ const listPermissionTargetsTool = {
     cursor: z.string().optional().describe("Cursor for pagination"),
     limit: z.number().optional().describe("Limit the number of results")
   })),
-  outputSchema: zodToJsonSchema(PermissionListSchema),
+  //outputSchema: zodToJsonSchema(PermissionListSchema),
   handler: async (args: any) => {
     return await getAllPermissionTargets(args.cursor, args.limit);
   }
@@ -184,7 +184,7 @@ const getPermissionTargetTool = {
   inputSchema: zodToJsonSchema(z.object({
     name: z.string().describe("The name of the permission target to retrieve")
   })),
-  outputSchema: zodToJsonSchema(PermissionTargetSchema),
+  //outputSchema: zodToJsonSchema(PermissionTargetSchema),
   handler: async (args: any) => {
     return await getPermissionTarget(args.name);
   }
@@ -194,7 +194,7 @@ const createPermissionTargetTool = {
   name: "jfrog_create_permission_target",
   description: "Create a new permission target in the JFrog platform",
   inputSchema: zodToJsonSchema(PermissionTargetSchema),
-  outputSchema: zodToJsonSchema(PermissionTargetSchema),
+  //outputSchema: zodToJsonSchema(PermissionTargetSchema),
   handler: async (args: any) => {
     return await createPermissionTarget(args);
   }
@@ -207,7 +207,7 @@ const updatePermissionTargetTool = {
     name: z.string().describe("The name of the permission target to update"),
     target: PermissionTargetSchema.omit({ name: true })
   })),
-  outputSchema: zodToJsonSchema(PermissionTargetSchema),
+  //outputSchema: zodToJsonSchema(PermissionTargetSchema),
   handler: async (args: any) => {
     const { name, target } = args;
     return await updatePermissionTarget(name, { name, ...target });
@@ -220,9 +220,9 @@ const deletePermissionTargetTool = {
   inputSchema: zodToJsonSchema(z.object({
     name: z.string().describe("The name of the permission target to delete")
   })),
-  outputSchema: zodToJsonSchema(z.object({
-    success: z.boolean()
-  })),
+  // //outputSchema: zodToJsonSchema(z.object({
+  //   success: z.boolean()
+  // })),
   handler: async (args: any) => {
     return await deletePermissionTarget(args.name);
   }
@@ -234,9 +234,9 @@ const getPermissionResourceTool = {
   description: "Get details of a specific resource type within a permission target",
   inputSchema: zodToJsonSchema(z.object({
     name: z.string().describe("The name of the permission target"),
-    resourceType: z.enum(['artifact', 'release_bundle', 'build']).describe("The type of resource to retrieve")
+    resourceType: z.enum(["artifact", "release_bundle", "build"]).describe("The type of resource to retrieve")
   })),
-  outputSchema: zodToJsonSchema(z.union([ArtifactResourceSchema, ReleaseBundleResourceSchema, BuildResourceSchema])),
+  //outputSchema: zodToJsonSchema(z.union([ArtifactResourceSchema, ReleaseBundleResourceSchema, BuildResourceSchema])),
   handler: async (args: any) => {
     return await getPermissionResource(args.name, args.resourceType);
   }
@@ -247,10 +247,10 @@ const updatePermissionResourceTool = {
   description: "Update a specific resource type within a permission target",
   inputSchema: zodToJsonSchema(z.object({
     name: z.string().describe("The name of the permission target"),
-    resourceType: z.enum(['artifact', 'release_bundle', 'build']).describe("The type of resource to update"),
+    resourceType: z.enum(["artifact", "release_bundle", "build"]).describe("The type of resource to update"),
     resource: z.union([ArtifactResourceSchema, ReleaseBundleResourceSchema, BuildResourceSchema])
   })),
-  outputSchema: zodToJsonSchema(z.union([ArtifactResourceSchema, ReleaseBundleResourceSchema, BuildResourceSchema])),
+  //outputSchema: zodToJsonSchema(z.union([ArtifactResourceSchema, ReleaseBundleResourceSchema, BuildResourceSchema])),
   handler: async (args: any) => {
     return await updatePermissionResource(args.name, args.resourceType, args.resource);
   }
@@ -261,10 +261,10 @@ const replacePermissionResourceTool = {
   description: "Replace a specific resource type within a permission target",
   inputSchema: zodToJsonSchema(z.object({
     name: z.string().describe("The name of the permission target"),
-    resourceType: z.enum(['artifact', 'release_bundle', 'build']).describe("The type of resource to replace"),
+    resourceType: z.enum(["artifact", "release_bundle", "build"]).describe("The type of resource to replace"),
     resource: z.union([ArtifactResourceSchema, ReleaseBundleResourceSchema, BuildResourceSchema])
   })),
-  outputSchema: zodToJsonSchema(z.union([ArtifactResourceSchema, ReleaseBundleResourceSchema, BuildResourceSchema])),
+  //outputSchema: zodToJsonSchema(z.union([ArtifactResourceSchema, ReleaseBundleResourceSchema, BuildResourceSchema])),
   handler: async (args: any) => {
     return await replacePermissionResource(args.name, args.resourceType, args.resource);
   }
@@ -275,11 +275,11 @@ const deletePermissionResourceTool = {
   description: "Delete a specific resource type from a permission target",
   inputSchema: zodToJsonSchema(z.object({
     name: z.string().describe("The name of the permission target"),
-    resourceType: z.enum(['artifact', 'release_bundle', 'build']).describe("The type of resource to delete")
+    resourceType: z.enum(["artifact", "release_bundle", "build"]).describe("The type of resource to delete")
   })),
-  outputSchema: zodToJsonSchema(z.object({
-    success: z.boolean()
-  })),
+  // //outputSchema: zodToJsonSchema(z.object({
+  //   success: z.boolean()
+  // })),
   handler: async (args: any) => {
     return await deletePermissionResource(args.name, args.resourceType);
   }
