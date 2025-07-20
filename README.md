@@ -11,6 +11,13 @@ https://github.com/user-attachments/assets/aca3af2b-f294-41c8-8727-799a019a55b5
 ## Disclaimer
 This is an experimental project intended to demonstrate JFrog's capabilities with MCP. It is not officially supported or verified by JFrog.
 
+> **Update (2025):**  
+JFrog now provides an official, secure, and remotely hosted MCP server for seamless integration with the JFrog Platform.  
+This managed MCP server is maintained by JFrog and is recommended for production use, offering enhanced security, reliability, and support.
+
+Learn more and get started here:  
+👉 [JFrog MCP Server Documentation](https://jfrog.com/help/r/jfrog-integrations-documentation/jfrog-mcp-server)
+
 ## Features
 
 - **Repository Management**: Create and manage local, remote, and virtual repositories
