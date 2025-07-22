@@ -27,6 +27,7 @@ Learn more and get started here:
 - **Artifact Search**: Execute powerful AQL queries to search for artifacts and builds
 - **Catalog and Curation**: Access package information, versions, vulnerabilities, and check curation status
 - **Xray**: Access scan artifacts summary, group by severity per artifact
+- **Workers**: Access all workers 
 
 ## Tools
 
