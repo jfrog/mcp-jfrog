@@ -262,7 +262,7 @@ npx -y @smithery/cli install @jfrog/mcp-jfrog --client claude
 - `RECONNECT_DELAY_MS`: Base delay in milliseconds between reconnection attempts (default: 2000)
 
 ### JFrog Token (`JFROG_ACCESS_TOKEN`)
-To use this MCP server, you need to create a JFrog Access Token or use an Idenetity token with appropriate permissions:
+To use this MCP server, you need to create a JFrog Access Token or use an identity token with appropriate permissions:
 
 For information on how to create a JFrog Token, please refer to the JFrog official documentations:
 
