@@ -278,7 +278,7 @@ Your JFrog platform instance URL (e.g. https://acme.jfrog.io)
 
 The SSE transport mode includes the following features:
 
-- **Connection Management**: Each SSE connection is tracked with a unique ID, allowing clients to maintain state across reconnections.
+- **Connection Management**: Each SSE connection is tracked with a unique ID, allowing clients to maintain state across reconnection attempts.
 - **Structured Logging**: Detailed logs with timestamps, severity levels, and relevant contextual information.
 - **Connection Resilience**: Automatic reconnection attempts with exponential backoff if the server fails to start.
 - **Health Endpoint**: A `/health` endpoint that returns server status information.
