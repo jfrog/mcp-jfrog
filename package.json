@@ -13,7 +13,7 @@
         "dist"
     ],
     "scripts": {
-        "build": "tsc && shx chmod +x dist/*.js",
+        "build": "tsc && shx chmod +x dist/*.js && mkdir -p ./dist/schemas/types/ && cp ./schemas/types/PlatformContextTypeDefinition.d.ts ./dist/schemas/types/",
         "prepare": "npm run build",
         "watch": "tsc --watch",
         "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
