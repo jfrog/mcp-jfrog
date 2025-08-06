@@ -40,6 +40,10 @@ export function buildUrl(baseUrl: string, params: Record<string, string | number
 
 const USER_AGENT = `modelcontextprotocol/servers/jfrog/v${VERSION} ${getUserAgent()}`;
 
+export function getJFrogBaseUrl(): string {
+  return normalizeJFrogBaseUrl(process.env.JFROG_URL || "");
+}
+
 /**
  * Normalizes a JFrog base URL by ensuring it ends with a trailing slash
  * @param baseUrl The base URL to normalize
@@ -68,7 +72,7 @@ export async function jfrogRequest(
   }
 
 
-  const baseUrl = normalizeJFrogBaseUrl(process.env.JFROG_URL || "");
+  const baseUrl = getJFrogBaseUrl();
   const path = urlPath.startsWith("/") ? urlPath.substring(1) : urlPath;
   const url = baseUrl ? `${baseUrl}${path}` : urlPath;
 

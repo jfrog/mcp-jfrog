@@ -27,6 +27,7 @@ Learn more and get started here:
 - **Artifact Search**: Execute powerful AQL queries to search for artifacts and builds
 - **Catalog and Curation**: Access package information, versions, vulnerabilities, and check curation status
 - **Xray**: Access scan artifacts summary, group by severity per artifact
+- **Workers**: Create and manage JFrog Workers with best practices (note: update and delete operations are considered critical and are intentionally not implemented in this MCP server for safety reasons)
 
 ## Tools
 
@@ -231,6 +232,69 @@ Learn more and get started here:
     - Inputs:
       - `paths` (string array): An array of paths to the artifacts from which to create the summary from
     - Returns: A summary based on vulnerability count per severity for each artifact in the provided array plus the total issues
+</details>
+
+<details>
+<summary><strong>Workers</strong></summary>
+
+23. `jfrog_workers_check_availability`
+    - Check if JFrog Worker Service is ready and functioning
+    - Inputs: None
+    - Returns: Worker service readiness status
+
+24. `jfrog_list_workers_actions`
+    - List all available actions for JFrog Workers with optional project filtering
+    - Inputs:
+      - `projectKey` (optional string): The project key for which you want to retrieve available actions
+    - Returns: List of available Worker actions with descriptions, sample payloads, and code templates
+
+25. `jfrog_generate_worker_code`
+    - Generate a worker script template for a specified action and purpose
+    - Inputs:
+      - `action` (string): The action name defined in the ListActionsResponseSchema
+      - `intendedPurpose` (string): The intended purpose of the Worker
+    - Returns: Code template, type definitions, and implementation instructions
+
+26. `jfrog_create_worker`
+    - Create a new worker based on a provided description of its intended purpose
+    - Inputs:
+      - `projectKey` (optional string): The project context in which the Worker should belong to
+      - `name` (string): The name of the Worker (2-40 characters, letters and dashes only)
+      - `action` (object): The action on which the Worker belongs to
+        - `name` (string): The name of the action
+        - `application` (string): The application that triggers workers
+      - `workerCode` (string): The TS/JS code of the Worker
+      - `settings` (optional object): Define settings regarding a Worker
+        - `description` (optional string): Describe what this worker does
+        - `repositories` (optional string[]): List of repositories that will trigger this Worker (for FILTER_REPO actions)
+        - `includePatterns` (optional string[]): Patterns that trigger the Worker when they match an artifact path
+        - `excludePatterns` (optional string[]): Patterns that prevent the Worker from being triggered
+        - `anyLocal` (optional boolean): Whether the Worker should trigger when any local repository is affected
+        - `anyRemote` (optional boolean): Whether the Worker should trigger when any remote repository is affected
+        - `anyFederated` (optional boolean): Whether the Worker should trigger when any federated repository is affected
+        - `cronExpression` (optional string): Cron expression for scheduled Workers (for SCHEDULE actions)
+        - `timezone` (optional string): Timezone for scheduled Workers
+        - `secrets` (optional array): List of secrets that will be used by the Worker
+          - `name` (string): The name of the secret
+          - `value` (string): The value of the secret
+        - `properties` (optional array): List of properties that will be used by the Worker
+          - `name` (string): The name of the property
+          - `value` (string): The value of the property
+        - `showStatusOfSuccessfulExecutions` (optional boolean): Whether to record successful execution results
+        - `allowOtherUsersToExecuteTheWorker` (optional boolean): Allow non-admin users to trigger this Worker
+    - Returns: Created worker details
+
+27. `jfrog_get_worker_best_practices`
+    - Get best practices and recommendations for creating efficient JFrog Workers
+    - Inputs:
+      - `action` (optional string): Optional action name to get specific recommendations
+    - Returns: Best practices, recommendations, and specific advice for Worker creation
+
+28. `jfrog_list_all_workers`
+    - List all JFrog Workers with optional project filtering
+    - Inputs:
+      - `projectKey` (optional string): The project key for which you want to retrieve workers. If not provided, all workers will be retrieved. Note: without a projectKey, the token must have full admin rights; with a projectKey, project admin rights or higher are sufficient
+    - Returns: List of all workers with their details including name, action, settings, and status
 </details>
 
 ## Setup
@@ -533,10 +597,9 @@ For Claude Desktop with SSE transport:
   }
 }
 ```
-```
 </details>
 
-
+```
 ## License
-
 This MCP server is licensed under the Apache License 2.0. This means you are free to use, modify, and distribute the software, subject to the terms and conditions of the Apache License 2.0. For more details, please see the LICENSE.md file in the project repository.
+```
