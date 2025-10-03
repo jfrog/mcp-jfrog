@@ -4,7 +4,8 @@ export const PackageTypeEnum = z.enum([
   "bower", "cargo", "chef", "cocoapods", "composer", "conan", "cran", 
   "debian", "docker", "Npm", "gems", "gitlfs", "go", "gradle", "helm", "ivy", 
   "maven", "nuget", "opkg", "p2", "pub", "puppet", "pypi", "rpm", "sbt", 
-  "swift", "terraform", "vagrant", "yum", "generic"
+  "swift", "terraform", "vagrant", "yum", "generic", "alpine", "conda", "helmoci", 
+  "huggingfaceml", "ansible", "oci"
 ]).describe("Package type of the repository");
   
 export const BaseRepositorySchema = z.object({
@@ -205,6 +206,51 @@ export const CreateVirtualRepoSchema = BaseRepositorySchema.extend({
   externalDependenciesRemoteRepo: z.string().optional().describe("Remote repository for external dependencies"),
   primaryKeyPairRef: z.string().optional().describe("Primary GPG key pair reference"),
   secondaryKeyPairRef: z.string().optional().describe("Secondary GPG key pair reference")
+});
+
+export const CreateFederatedRepoSchema = BaseRepositorySchema.extend({
+  rclass: z.literal("federated").describe("The repository type"),
+  members: z.array(z.object({
+    url: z.string().describe("Full URL to ending with the repositoryName. Typically follows pattern: {baseUrl}/artifactory/{repoKey} where repoKey matches the primary repository key"),
+    enabled: z.boolean().default(true).describe("Represents the active state of the federated member.")
+  })).optional().describe("List of federated members. Members typically have the same repository key as the primary repository but on different Artifactory instances. URL format: {baseUrl}/artifactory/{repoKey} where repoKey should match the primary repository key for consistency"),
+  description: z.string().optional().describe("The federated repository public description"),
+  proxy: z.string().optional().describe("Proxy key"),
+  disableProxy: z.boolean().default(false),
+  notes: z.string().optional().describe("Some internal notes"),
+  includesPattern: z.string().default("**/*").describe("Pattern to define artifacts to include"),
+  excludesPattern: z.string().default("").describe("Pattern to define artifacts to exclude"),
+  repoLayoutRef: z.string().default("maven-2-default").describe("Repository layout reference"),
+  debianTrivialLayout: z.boolean().default(false).describe("Whether to use trivial layout for Debian repositories"),
+  checksumPolicyType: z.enum([
+    "client-checksums",
+    "server-generated-checksums"
+  ]).default("client-checksums"),
+  handleReleases: z.boolean().default(true),
+  handleSnapshots: z.boolean().default(true),
+  maxUniqueSnapshots: z.number().default(0),
+  maxUniqueTags: z.number().default(0),
+  snapshotVersionBehavior: z.enum([
+    "unique",
+    "non-unique", 
+    "deployer"
+  ]).default("unique"),
+  suppressPomConsistencyChecks: z.boolean().default(false),
+  blackedOut: z.boolean().default(false),
+  xrayIndex: z.boolean().default(false),
+  propertySets: z.array(z.string()).optional(),
+  archiveBrowsingEnabled: z.boolean().default(false),
+  calculateYumMetadata: z.boolean().default(false),
+  yumRootDepth: z.number().default(0),
+  dockerApiVersion: z.string().default("V2"),
+  enableFileListsIndexing: z.boolean().default(false),
+  optionalIndexCompressionFormats: z.array(z.enum(["bz2", "lzma", "xz"])).optional(),
+  downloadRedirect: z.boolean().default(false),
+  cdnRedirect: z.boolean().default(false).describe("Applies to Artifactory Cloud Only"),
+  blockPushingSchema1: z.boolean().default(false),
+  primaryKeyPairRef: z.string().optional().describe("Primary GPG key pair reference"),
+  secondaryKeyPairRef: z.string().optional().describe("Secondary GPG key pair reference"),
+  priorityResolution: z.boolean().default(false).describe("Applies to all repository types excluding CocoaPods, Git LFS, NuGet V2, Opkg, RPM, Rust, Vagrant and VCS repositories")
 });
   
 export const JFrogPlatformReadinessSchema= z.object({
