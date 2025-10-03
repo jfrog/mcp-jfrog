@@ -9,6 +9,7 @@ import { CatalogTools } from "./catalog.js";
 import { CurationTools } from "./curation.js";
 import { PermissionsTools } from "./permissions.js";
 import { ArtifactSecurityTools } from "./security.js";
+import { WorkersTools } from "./workers.js";
 
 export const tools =[
   ...RepositoryTools,
@@ -20,6 +21,7 @@ export const tools =[
   ...CurationTools,
   ...PermissionsTools,
   ...ArtifactSecurityTools,
+  ...WorkersTools,
 ];
 
 // A function that given a tool name, executes the handler with the arguments and returns the result
