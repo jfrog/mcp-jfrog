@@ -4,6 +4,9 @@
 
 Model Context Protocol (MCP) Server for the JFrog Platform API, enabling repository management, build tracking, release lifecycle management, and more.
 
+<a href="https://glama.ai/mcp/servers/@jfrog/mcp-jfrog">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@jfrog/mcp-jfrog/badge" alt="JFrog Server MCP server" />
+</a>
 
 https://github.com/user-attachments/assets/aca3af2b-f294-41c8-8727-799a019a55b5
 
@@ -532,7 +535,6 @@ For Claude Desktop with SSE transport:
     }
   }
 }
-```
 ```
 </details>
 
