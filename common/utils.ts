@@ -22,7 +22,7 @@ type RequestOptions = {
 
 async function parseResponseBody(response: AxiosResponse): Promise<unknown> {
   const contentType = response.headers["content-type"];
-  if (contentType?.includes("application/json")) {
+  if ((contentType as string)?.includes("application/json")) {
     return response.data;
   }
   return response.data;
@@ -82,7 +82,6 @@ export async function jfrogRequest(
 
     const response = await axios(axiosConfig);
     return postProcess(response.data);
-    return response.data;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {
       throw createJFrogError(error.response.status, error.response.data);
