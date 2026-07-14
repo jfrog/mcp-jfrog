@@ -24,7 +24,7 @@
         "precommit": "lint-staged"
     },
     "dependencies": {
-        "@modelcontextprotocol/sdk": "1.12.1",
+        "@modelcontextprotocol/sdk": "1.26.0",
         "@types/node": "^22",
         "@types/node-fetch": "^2.6.12",
         "axios": "^1.12.0",
