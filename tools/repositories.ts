@@ -5,6 +5,7 @@ import {
   CreateLocalRepoSchema, 
   CreateRemoteRepoSchema, 
   CreateVirtualRepoSchema, 
+  CreateFederatedRepoSchema,
   ListRepositoriesParamsSchema, 
   JFrogRepositoryCreateResponseSchema,
   JFrogPlatformReadinessSchema,
@@ -95,6 +96,15 @@ export async function createVirtualRepository(options: z.infer<typeof CreateVirt
   return JFrogRepositoryCreateResponseSchema.parse(response);
 }
 
+export async function createFederatedRepository(options: z.infer<typeof CreateFederatedRepoSchema>) {
+  const response = await jfrogRequest(`/artifactory/api/repositories/${options.key}`, {
+    method: "PUT",
+    body: options
+  });
+     
+  return JFrogRepositoryCreateResponseSchema.parse(response);
+}
+
 /* End of Api Calls Section */
 
 
@@ -154,6 +164,17 @@ const createVirtualRepositoryTool = {
   }
 };
 
+const createFederatedRepositoryTool = {
+  name: "jfrog_create_federated_repository",
+  description: "Create a new federated repository in Artifactory that replicates artifacts between multiple other federated repositories. Note: Federated members typically use the same repository key as the primary repository but on different Artifactory instances. When specifying members, use URL format: {baseUrl}/artifactory/{repoKey} where repoKey should match the primary repository key for consistency",
+  inputSchema: zodToJsonSchema(CreateFederatedRepoSchema),
+  //outputSchema: zodToJsonSchema(JFrogRepositoryCreateResponseSchema),
+  handler: async (args: any) => {
+    const parsedArgs = CreateFederatedRepoSchema.parse(args);
+    return await createFederatedRepository(parsedArgs);
+  }
+};
+
 const listRepositoriesTool = {
   name: "jfrog_list_repositories",
   description: "List all repositories in Artifactory with optional filtering by type, package type, and project",
@@ -170,6 +191,7 @@ export const RepositoryTools =[
   createLocalRepositoryTool,
   createRemoteRepositoryTool,
   createVirtualRepositoryTool,
+  createFederatedRepositoryTool,
   setFolderPropertyTool,
   listRepositoriesTool
 ];

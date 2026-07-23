@@ -92,7 +92,20 @@ Please migrate to the official server:
      - Other optional parameters for specific repository configurations
    - Returns: Created repository details
 
-5. `list_repositories`
+6. `create_federated_repository`
+   - Create a new federated repository in Artifactory that replicates artifacts between multiple other federated repositories
+   - Inputs:
+     - `key` (string): Repository key
+     - `rclass` (string): Repository class (must be "federated")
+     - `packageType` (string): Package type of the repository
+     - `members` (optional array): List of federated members with URL, credentials, and configuration
+     - `description` (optional string): Repository description
+     - `projectKey` (optional string): Project key to assign the repository to
+     - `environments` (optional string[]): Environments to assign the repository to
+     - Other optional parameters for specific repository configurations
+   - Returns: Created repository details
+
+7. `list_repositories`
    - List all repositories in Artifactory with optional filtering
    - Inputs:
      - `type` (optional string): Filter repositories by type (local, remote, virtual, federated, distribution)
@@ -548,7 +561,6 @@ For Claude Desktop with SSE transport:
     }
   }
 }
-```
 ```
 </details>
 
